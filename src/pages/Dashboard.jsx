@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   CubeIcon, 
   ChartBarIcon, 
@@ -6,7 +5,6 @@ import {
 } from '@heroicons/react/24/solid';
 
 function Dashboard() {
-  // Array de características para empleados de almacén
   const caracteristicas = [
     {
       icono: <CubeIcon className="w-10 h-10 text-principal" />,
@@ -25,79 +23,103 @@ function Dashboard() {
     }
   ];
 
-  return (
-    <div className="min-h-90 max-w-50 bg-background_2 p-4 flex flex-col items-center justify-center relative">
-      {/* Contenedor para el efecto de borde */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                      w-[100%] h-[70%] 
-                      border-2 bg-accent-subtle-lavender  shadow-lg
-                      rounded-lg border-principal
-                      ">
-      </div>
+  const AccesoRapido = [
+    {
+      titulo: "Inventario",
+      descripcion: "Consulta y actualiza existencias",
+      icono: <CubeIcon className="w-6 h-6 text-principal mx-auto mb-2" />
+    },
+    {
+      titulo: "Proveedores",
+      descripcion: "Gestión de contactos",
+      icono: <ChartBarIcon className="w-6 h-6 text-principal mx-auto mb-2" />
+    },
+    {
+      titulo: "Movimientos",
+      descripcion: "Registro de entradas y salidas",
+      icono: <ServerIcon className="w-6 h-6 text-principal mx-auto mb-2" />
+    }
+  ];
 
-      {/* Cuerpo Principal */}
-      <div className="mt-5 flex-grow flex items-center justify-center rounded-lg bg-accent-subtle-lavender w-100 h-100 relative z-1 border-2 border-principal ">
-        <div className="relative bg-white rounded-lg shadow-lg p-6 h-100 w-100 " 
-             style={{ 
-               backdropFilter: 'blur(10px)', 
-               maxWidth: '90%', 
-               maxHeight: '95%', 
-               margin: 'auto 0' 
-             }}>
-          <h2 className="text-2xl font-semibold text-text-primary mb-4">Panel de Control de Almacén</h2>
-          <p className="text-text-secondary mb-4">
-            Sistema integral para la gestión eficiente de inventario y recursos.
-          </p>
-          
-          {/* Sección de Accesos Rápidos */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gray-100 rounded-lg p-4 text-center hover:bg-gray-200 transition">
-              <h3 className="font-semibold mb-2">Inventario</h3>
-              <p className="text-sm text-gray-600">Consulta y actualiza existencias</p>
-            </div>
-            <div className="bg-gray-100 rounded-lg p-4 text-center hover:bg-gray-200 transition">
-              <h3 className="font-semibold mb-2">Proveedores</h3>
-              <p className="text-sm text-gray-600">Gestión de contactos</p>
-            </div>
-            <div className="bg-gray-100 rounded-lg p-4 text-center hover:bg-gray-200 transition">
-              <h3 className="font-semibold mb-2">Movimientos</h3>
-              <p className="text-sm text-gray-600">Registro de entradas y salidas</p>
+  return (
+    <div className="min-h-screen bg-background_2 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Contenedor Principal con Diseño Responsive */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Encabezado Adaptativo */}
+          <div className="bg-principal text-white p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
+                  Panel de Control de Almacén
+                </h2>
+                <p className="text-sm sm:text-base text-white/80">
+                  Sistema integral para la gestión eficiente de inventario y recursos
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Sección de Características */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {caracteristicas.map((caracteristica, index) => (
+          {/* Sección de Accesos Rápidos */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6 bg-background">
+            {AccesoRapido.map((acceso, index) => (
               <div 
                 key={index} 
                 className="bg-white 
-                           rounded-lg 
+                           rounded-xl 
                            p-4 
-                           flex 
-                           flex-col 
-                           items-center 
                            text-center 
                            shadow-md 
                            border 
-                           border-principal/20
-                           hover:shadow-lg 
+                           border-gray-100 
+                           hover:shadow-xl 
+                           hover:border-principal/20 
                            transition-all 
                            duration-300 
-                           ease-in-out
-                           cursor-pointer hover:bg-success"
-                           
+                           cursor-pointer"
               >
-                <div className="mb-3">
-                  {caracteristica.icono}
-                </div>
-                <h3 className="text-lg font-semibold text-text-primary mb-2">
-                  {caracteristica.titulo}
-                </h3>
-                <p className="text-text-secondary text-sm">
-                  {caracteristica.descripcion}
-                </p>
+                {acceso.icono}
+                <h3 className="font-semibold text-text-primary mb-2">{acceso.titulo}</h3>
+                <p className="text-text-secondary text-sm">{acceso.descripcion}</p>
               </div>
             ))}
+          </div>
+
+          {/* Sección de Características */}
+          <div className="p-4 sm:p-6 bg-background_2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              {caracteristicas.map((caracteristica, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white 
+                             rounded-xl 
+                             p-4 sm:p-6 
+                             flex 
+                             flex-col 
+                             items-center 
+                             text-center 
+                             shadow-md 
+                             border 
+                             border-gray-100
+                             hover:shadow-xl 
+                             hover:border-principal/20
+                             transition-all 
+                             duration-300 
+                             ease-in-out
+                             cursor-pointer"
+                >
+                  <div className="mb-3 sm:mb-4">
+                    {caracteristica.icono}
+                  </div>
+                  <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2">
+                    {caracteristica.titulo}
+                  </h3>
+                  <p className="text-text-secondary text-xs sm:text-sm">
+                    {caracteristica.descripcion}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

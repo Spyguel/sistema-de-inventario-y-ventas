@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate} from 'react-router-dom';
 import { 
   HomeIcon, 
   DocumentChartBarIcon, 
   CubeIcon, 
   TruckIcon, 
   UserGroupIcon, 
-  ArrowsRightLeftIcon, 
   UsersIcon, 
   CogIcon, 
   ArrowLeftOnRectangleIcon,
@@ -16,17 +15,19 @@ import {
 
 function BarraLateral() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+
   const iconMap = {
     'home': HomeIcon,
     'inf': DocumentChartBarIcon,
     'product': CubeIcon,
     'prov': TruckIcon,
     'report': UserGroupIcon,
-    'product': ArrowsRightLeftIcon,
     'contact': UsersIcon,
     'setting': CogIcon,
     'logout': ArrowLeftOnRectangleIcon
   };
+
   const Menus = [
     { title: 'Inicio', src: 'home', path: '/', gap: true },
     { title: 'Informes', src: 'inf', path: '/informes' },
@@ -39,40 +40,54 @@ function BarraLateral() {
     { title: 'Cerrar Sesión', src: 'logout', path: '/logout' },
   ];
 
-  const toggleBarraLateral = () => {
-    setOpen(!open);
+  const handleMenuClick = (path) => {
+    if (path === '/logout') {
+      // Lógica de cierre de sesión
+      localStorage.removeItem('isAuthenticated');
+      navigate('/login');
+    } else {
+      navigate(path);
+    }
   };
 
   return (
-    <div className={`${open ? 'w-72' : 'w-20'} h-screen p-4 pt-9 bg-pastel-blue relative transition-all duration-300`}>
+    <div className={`${open ? 'w-72' : 'w-20'} h-screen p-4 pt-9 bg-principal relative transition-all duration-300`}>
+      {/* Botón de toggle */}
       <div 
-        className="absolute cursor-pointer rounded-full -right-4 top-9 w-8 h-8 flex items-center justify-center bg-pastel-pink border-2 border-pastel-blue transition-colors duration-300 hover:bg-pastel-yellow"
-        onClick={toggleBarraLateral}
+        className="absolute cursor-pointer rounded-full -right-4 top-9 w-8 h-8 flex items-center justify-center bg-accent-soft-blue border-2 border-principal transition-colors duration-300 hover:bg-detalles"
+        onClick={() => setOpen(!open)}
       >
         {open ? (
-          <ChevronLeftIcon className="w-5 h-5 text-pastel-blue" />
+          <ChevronLeftIcon className="w-5 h-5 text-white" />
         ) : (
-          <ChevronRightIcon className="w-5 h-5 text-pastel-blue" />
+          <ChevronRightIcon className="w-5 h-5 text-white" />
         )}
       </div>
+
+      {/* Logo y título */}
       <div className="flex gap-x-4 items-center">
-        <img alt="Alric Logo" className="w-10 h-10" />
-        <h1 className={`text-pastel-white origin-left font-medium text-xl duration-300 ${!open && 'scale-0'}`}>
+        <div className="w-10 h-10 bg-white rounded-full"></div>
+        <h1 className={`text-white origin-left font-medium text-xl duration-300 ${!open && 'scale-0'}`}>
           ALRIC
         </h1>
       </div>
+
+      {/* Menú de navegación */}
       <ul className='pt-6'>
         {Menus.map((menu, index) => {
           const Icon = iconMap[menu.src];
           return (
             <li 
               key={index} 
-              className={`flex rounded-md p-2 cursor-pointer hover:bg-pastel-pink text-pastel-white text-sm items-center gap-x-4 ${menu.gap ? 'mt-9' : 'mt-2'}`}
+              className={`flex rounded-md p-2 cursor-pointer hover:bg-accent-soft-blue text-white text-sm items-center gap-x-4 ${menu.gap ? 'mt-9' : 'mt-2'}`}
+              onClick={() => handleMenuClick(menu.path)}
             >
-              <Link to={menu.path} className="flex items-center gap-x-4 w-full">
+              <div className="flex items-center gap-x-4 w-full">
                 <Icon className="w-6 h-6" />
-                <span className={`${!open && 'hidden'} origin-left duration-200`}>{menu.title}</span>
-              </Link>
+                <span className={`${!open && 'hidden'} origin-left duration-200`}>
+                  {menu.title}
+                </span>
+              </div>
             </li>
           );
         })}
