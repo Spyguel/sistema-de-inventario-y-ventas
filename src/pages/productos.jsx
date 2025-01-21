@@ -1,8 +1,8 @@
-// Productos.jsx
-import { useState } from 'react';
+import  { useState, useMemo } from 'react';
 import Button from '../components/common/button';
 import ProductTable from '../components/common/ProductTable'; 
 import ProductForm from '../components/common/modal';
+import BarraBusqueda from '../components/common/BarraBusqueda';
 
 // Datos pre-cargados de productos
 const productosIniciales = [
@@ -14,13 +14,39 @@ const productosIniciales = [
         cantidadMinima: 10,
         activo: true
     },
-    // ... otros productos iniciales
 ];
 
 function Productos() {
     const [productos, setProductos] = useState(productosIniciales);
     const [modalAbierto, setModalAbierto] = useState(false);
     const [productoSeleccionado, setProductoSeleccionado] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('todos');
+
+    // Función de búsqueda y filtrado
+    const productosFiltrados = useMemo(() => {
+        return productos.filter(producto => {
+            const coincideBusqueda = 
+                producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                producto.tipoItem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                producto.unidadMedida.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                producto.id.toString().includes(searchTerm);
+
+            const coincideEstado = 
+                filtroEstado === 'todos' || 
+                filtroEstado === 'activos' && producto.activo ||
+                filtroEstado === 'inactivos' && !producto.activo ||
+                producto.tipoItem === filtroEstado;
+
+            return coincideBusqueda && coincideEstado;
+        });
+    }, [productos, searchTerm, filtroEstado]);
+
+    // Manejador de búsqueda
+    const handleSearch = (term, estado) => {
+        setSearchTerm(term);
+        setFiltroEstado(estado);
+    };
 
     const handleEditarProducto = (producto) => {
         setProductoSeleccionado(producto);
@@ -81,9 +107,19 @@ function Productos() {
                     Agregar Producto
                 </Button>
             </div>
-
+            <BarraBusqueda
+                onSearch={handleSearch}
+                placeholder="Buscar productos por nombre..."
+                options={[
+                    { value: 'todos', label: 'Todos' },
+                    { value: 'activos', label: 'Activos' },
+                    { value: 'inactivos', label: 'Inactivos' },
+                    { value: 'PRODUCTO_TERMINADO', label: 'Producto final' },
+                    { value: 'MATERIA_PRIMA', label: 'Materia prima' },
+                ]}
+            />
             <ProductTable 
-                productos={productos} 
+                productos={productosFiltrados} // Cambio clave: usar productosFiltrados
                 onEdit={handleEditarProducto}
                 onDelete={handleEliminarProducto}
                 onAddComponent={handleAgregarComponente}
@@ -92,7 +128,8 @@ function Productos() {
 
             <ProductForm 
                 isOpen={modalAbierto} 
-                onClose={() => { setModalAbierto(false);
+                onClose={() => { 
+                    setModalAbierto(false);
                     setProductoSeleccionado(null);
                 }}
                 title={productoSeleccionado ? "Editar Producto" : "Agregar Nuevo Producto"}
