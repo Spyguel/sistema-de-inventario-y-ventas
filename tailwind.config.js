@@ -21,7 +21,8 @@ export default {
         "success": "#7DB9B3",
         "warning": "#F3D250",
         "error": "#E27D8B",
-        "login-button": "#333"
+        "login-button": "#333",
+        "login-button-hover": "#232323",
     }
     },
   },
