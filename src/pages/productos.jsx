@@ -1,7 +1,7 @@
 import  { useState, useMemo } from 'react';
 import Button from '../components/common/button';
-import ProductTable from '../components/common/ProductTable'; 
-import ProductForm from '../components/common/modal';
+import ProductTable from '../components/common/Tablas/ProductTable'; 
+import ProductForm from '../components/common/Modals/ProductForm';
 import BarraBusqueda from '../components/common/BarraBusqueda';
 
 // Datos pre-cargados de productos
@@ -119,7 +119,7 @@ function Productos() {
                 ]}
             />
             <ProductTable 
-                productos={productosFiltrados} // Cambio clave: usar productosFiltrados
+                productos={productosFiltrados} 
                 onEdit={handleEditarProducto}
                 onDelete={handleEliminarProducto}
                 onAddComponent={handleAgregarComponente}

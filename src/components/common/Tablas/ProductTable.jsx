@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { BuildingStorefrontIcon, XCircleIcon, PencilIcon, CubeIcon } from '@heroicons/react/24/solid';
-import Button from './button';
+import Button from '../button';
 
 const ProductTable = ({ 
   productos = [], 
@@ -10,7 +10,7 @@ const ProductTable = ({
   requestSort = () => {} 
 }) => {
   return (
-    <div className="flex-grow overflow-hidden bg-accent-subtle-lavender rounded-lg shadow-lg p-4">
+    <div className="flex-grow overflow-hidden bg-gray-500 rounded-lg shadow-lg p-4">
       <div className="h-full overflow-hidden">
         <div className="overflow-auto max-h-[60vh]">
           <table className="w-full bg-background_2 rounded-lg" aria-label="Product Table">
