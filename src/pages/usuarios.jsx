@@ -188,7 +188,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     ? 'bg-gradient-to-br from-accent-muted-green to-accent-muted-green/80' 
                     : 'bg-gradient-to-br from-background_3 to-background_3/80'
             }`}>
-                <div className="bg-white rounded-lg p-4 shadow-lg backdrop-blur-sm">
+                <div className=" rounded-lg p-4 shadow-lg backdrop-blur-sm">
                     <div className="mb-6">
                         <BarraBusqueda
                             onSearch={handleSearch}
