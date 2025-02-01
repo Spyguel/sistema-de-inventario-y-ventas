@@ -10,7 +10,7 @@ const ProductTable = ({
   requestSort = () => {} 
 }) => {
   return (
-    <div className="flex-grow overflow-hidden bg-gray-300 rounded-lg shadow-lg p-4">
+    <div className="flex-grow overflow-hidden bg-gray-500 rounded-lg shadow-lg p-4">
       <div className="h-full overflow-hidden">
         <div className="overflow-auto max-h-[60vh]">
           <table className="w-full bg-background_2 rounded-lg" aria-label="Product Table">
@@ -33,7 +33,7 @@ const ProductTable = ({
                 productos.map((producto) => (
                   <tr 
                     key={producto.id} 
-                    className={`hover:bg-gray-400 transition-colores text-center ${!producto.activo ? 'bg-gray-400 text-gray-500' : ''}`}
+                    className={`hover:bg-gray-400 transition-colores text-center ${!producto.activo ? 'bg-gray-200 text-gray-500' : ''}`}
                   >
                     <td className="p-2 text-center">{producto.id}</td>
                     <td className="p-2 text-center">{producto.nombre}</td>

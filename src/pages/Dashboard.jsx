@@ -1,180 +1,130 @@
-import  { useState, useEffect } from 'react';
 import { 
-  BeakerIcon, 
+  CubeIcon, 
   ChartBarIcon, 
-  ServerIcon, 
-  UserIcon, 
-  CogIcon,
-  ArrowUpIcon, // Para ArrowTrendingUpIcon
-  ArrowDownIcon, // Para ArrowTrendingDownIcon
-  ClockIcon 
+  ServerIcon 
 } from '@heroicons/react/24/solid';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent
-} from "./components/ui/card";
 
-const Dashboard = () => {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  const metricas = [
-    {
-      titulo: "Inventario total",
-      valor: "123,456",
-      incremento: "+12.5%",
-      positivo: true,
-      icono: <ArrowUpIcon className="w-4 h-4" />
-    },
-    {
-      titulo: "Productos Bajos",
-      valor: "23",
-      incremento: "-5%",
-      positivo: false,
-      icono: <ArrowDownIcon className="w-4 h-4" />
-    },
-    {
-      titulo: "Movimientos Hoy",
-      valor: "89",
-      incremento: "+8%",
-      positivo: true,
-      icono: <ArrowUpIcon className="w-4 h-4" />
-    }
-  ];
-
+function Dashboard() {
   const caracteristicas = [
     {
-      icono: <BeakerIcon className="w-8 h-8" />,
+      icono: <CubeIcon className="w-10 h-10 text-principal" />,
       titulo: "Gestión de Inventario",
       descripcion: "Control preciso de stock, entradas y salidas de productos."
     },
     {
-      icono: <ChartBarIcon className="w-8 h-8" />,
+      icono: <ChartBarIcon className="w-10 h-10 text-principal" />,
       titulo: "Reportes y Análisis",
       descripcion: "Informes detallados de consumo, existencias y tendencias."
     },
     {
-      icono: <ServerIcon className="w-8 h-8" />,
+      icono: <ServerIcon className="w-10 h-10 text-principal" />,
       titulo: "Registro de Movimientos",
       descripcion: "Seguimiento completo de todas las operaciones de almacén."
-    },
-    {
-      icono: <UserIcon className="w-8 h-8" />,
-      titulo: "Gestión de Usuarios",
-      descripcion: "Control de acceso y permisos para cada usuario."
-    },
-    {
-      icono: <CogIcon className="w-8 h-8" />,
-      titulo: "Configuración",
-      descripcion: "Ajustes del sistema y personalización."
     }
   ];
 
-  const accionesRapidas = [
+  const AccesoRapido = [
     {
-      titulo: "Nuevo Producto",
-      descripcion: "Añadir item al inventario",
-      icono: <BeakerIcon className="w-6 h-6" />,
-      color: "bg-blue-500"
+      titulo: "Inventario",
+      descripcion: "Consulta y actualiza existencias",
+      icono: <CubeIcon className="w-6 h-6 text-principal mx-auto mb-2" />
     },
     {
-      titulo: "Registrar Entrada",
-      descripcion: "Entrada de mercancía",
-      icono: <ArrowUpIcon className="w-6 h-6" />,
-      color: "bg-green-500"
+      titulo: "Proveedores",
+      descripcion: "Gestión de contactos",
+      icono: <ChartBarIcon className="w-6 h-6 text-principal mx-auto mb-2" />
     },
     {
-      titulo: "Registrar Salida",
-      descripcion: "Salida de mercancía",
-      icono: <ArrowDownIcon className="w-6 h-6" />,
-      color: "bg-orange-500"
+      titulo: "Movimientos",
+      descripcion: "Registro de entradas y salidas",
+      icono: <ServerIcon className="w-6 h-6 text-principal mx-auto mb-2" />
     }
   ];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-              Panel de Inicio
-            </h1>
-            <div className="flex items-center text-gray-500 mt-1">
-              <ClockIcon className="w-4 h-4 mr-2" />
-              {currentTime.toLocaleString()}
+    <div className="min-h-screen bg-background_2 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Contenedor Principal con Diseño Responsive */}
+        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+          {/* Encabezado Adaptativo */}
+          <div className="bg-principal text-white p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between">
+              <div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
+                  Panel de Control de Almacén
+                </h2>
+                <p className="text-sm sm:text-base text-white/80">
+                  Sistema integral para la gestión eficiente de inventario y recursos
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Métricas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {metricas.map((metrica, index) => (
-            <Card key={index}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-gray-500">
-                  {metrica.titulo}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold">{metrica.valor}</span>
-                  <div className={`flex items-center ${metrica.positivo ? 'text-green-500' : 'text-red-500'}`}>
-                    {metrica.icono}
-                    <span className="ml-1 text-sm">{metrica.incremento}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Acciones Rápidas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {accionesRapidas.map((accion, index) => (
-            <button
-              key={index}
-              className="flex items-center p-4 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-200"
-            >
-              <div className={`${accion.color} p-3 rounded-lg text-white mr-4`}>
-                {accion.icono}
+          {/* Sección de Accesos Rápidos */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6 bg-background">
+            {AccesoRapido.map((acceso, index) => (
+              <div 
+                key={index} 
+                className="bg-white 
+                           rounded-xl 
+                           p-4 
+                           text-center 
+                           shadow-md 
+                           border 
+                           border-gray-100 
+                           hover:shadow-xl 
+                           hover:border-principal/20 
+                           transition-all 
+                           duration-300 
+                           cursor-pointer"
+              >
+                {acceso.icono}
+                <h3 className="font-semibold text-text-primary mb-2">{acceso.titulo}</h3>
+                <p className="text-text-secondary text-sm">{acceso.descripcion}</p>
               </div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-900">{accion.titulo}</h3>
-                <p className="text-sm text-gray-500">{accion.descripcion}</p>
-              </div>
-            </button>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        {/* Características */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {caracteristicas.map((caracteristica, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="pt-6">
-                <div className="flex flex-col items-center text-center">
-                  <div className="mb-4 p-2 bg-blue-50 rounded-lg text-blue-600">
+          {/* Sección de Características */}
+          <div className="p-4 sm:p-6 bg-background_2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+              {caracteristicas.map((caracteristica, index) => (
+                <div 
+                  key={index} 
+                  className="bg-white 
+                             rounded-xl 
+                             p-4 sm:p-6 
+                             flex 
+                             flex-col 
+                             items-center 
+                             text-center 
+                             shadow-md 
+                             border 
+                             border-gray-100
+                             hover:shadow-xl 
+                             hover:border-principal/20
+                             transition-all 
+                             duration-300 
+                             ease-in-out
+                             cursor-pointer"
+                >
+                  <div className="mb-3 sm:mb-4">
                     {caracteristica.icono}
                   </div>
-                  <h3 className="font-semibold mb-2">{caracteristica.titulo}</h3>
-                  <p className="text-sm text-gray-500">{caracteristica.descripcion}</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2">
+                    {caracteristica.titulo}
+                  </h3>
+                  <p className="text-text-secondary text-xs sm:text-sm">
+                    {caracteristica.descripcion}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard;
