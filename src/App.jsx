@@ -16,7 +16,7 @@ function App() {
   return (
     <Routes>
       {/* Rutas públicas */}
-      <Route path="/login" element={<Configuracion />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       {/* Rutas protegidas con layout */}
