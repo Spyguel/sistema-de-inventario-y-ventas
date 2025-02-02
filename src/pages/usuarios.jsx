@@ -1,12 +1,12 @@
 import { useState, useMemo } from 'react';
 import Button from '../components/common/button';
-import UsuariosTable from '../components/common/Tablas/UsuariosTable.jsx';
-import RolesTable from '../components/common/Tablas/RolesTable.jsx';
-import PermisosTable from '../components/common/Tablas/PermisosTable.jsx';
+import UsuariosTable from '../components/Tablas/UsuariosTable.jsx';
+import RolesTable from '../components/Tablas/RolesTable.jsx';
+import PermisosTable from '../components/Tablas/PermisosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda';
-import UsuarioForm from '../components/common/Modals/UsuarioForm.jsx';
-import RolForm from '../components/common/Modals/RolForm.jsx';
-import PermisosForm from '../components/common/Modals/PermisosForm.jsx';
+import UsuarioForm from '../components/Modals/UsuarioForm.jsx';
+import RolForm from '../components/Modals/RolForm.jsx';
+import PermisosForm from '../components/Modals/PermisosForm.jsx';
 import PropTypes from 'prop-types';
 
 function Usuarios({ permisos: propsPermisos }) {

@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { BuildingStorefrontIcon, XCircleIcon, PencilIcon, CubeIcon } from '@heroicons/react/24/solid';
-import Button from '../button';
+import Button from '../common/button';
 
 const ProductTable = ({ 
   productos = [], 

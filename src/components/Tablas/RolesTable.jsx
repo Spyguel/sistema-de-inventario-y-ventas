@@ -1,7 +1,7 @@
 // RolesTable.jsx
 import PropTypes from 'prop-types';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/solid';
-import Button from '../button';
+import Button from '../common/button';
 
 const RolesTable = ({ 
   roles = [], 

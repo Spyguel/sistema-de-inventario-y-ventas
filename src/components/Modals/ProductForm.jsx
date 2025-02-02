@@ -1,6 +1,6 @@
   import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import Button from '../button';
+import Button from '../common/button';
 
 // Enum para tipos de producto
 const TipoItem = {

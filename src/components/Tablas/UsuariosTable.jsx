@@ -1,7 +1,7 @@
 // UsuariosTable.jsx
 import PropTypes from 'prop-types';
 import { PencilIcon, UserIcon } from '@heroicons/react/24/solid';
-import Button from '../button';
+import Button from '../common/button';
 
 const UsuariosTable = ({ 
   usuarios = [], 
