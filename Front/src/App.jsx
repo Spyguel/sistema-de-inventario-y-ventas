@@ -1,14 +1,14 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import BarraLateral from './components/layaut/sidebar'; 
+import BarraLateral from './components/layaut/sidebar.jsx'; 
 
 // Importaciones de páginas
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Productos from './pages/productos';
-import Proveedores from './pages/proveedores';
-import Clientes from './pages/Clientes';
-import Usuarios from './pages/Usuarios';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Productos from './pages/productos.jsx';
+import Proveedores from './pages/proveedores.jsx';
+import Clientes from './pages/Clientes.jsx';
+import Usuarios from './pages/Usuarios.jsx';
 import Configuracion from './pages/Configuracion.jsx';
 
 function App() {

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import Button from '../../../common/button';
+import Button from '../../button';
 
 const Form = ({ title, children, onSubmit, submitText = 'Guardar', cancelText, onCancel }) => {
   return (

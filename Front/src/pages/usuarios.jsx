@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
-import Button from '../components/common/button';
+import Button from '../components/common/button.jsx';
 import UsuariosTable from '../components/Tablas/UsuariosTable.jsx';
 import RolesTable from '../components/Tablas/RolesTable.jsx';
 import PermisosTable from '../components/Tablas/PermisosTable.jsx';
-import BarraBusqueda from '../components/common/BarraBusqueda';
+import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 import UsuarioForm from '../components/Modals/UsuarioForm.jsx';
 import RolForm from '../components/Modals/RolForm.jsx';
 import PermisosForm from '../components/Modals/PermisosForm.jsx';
