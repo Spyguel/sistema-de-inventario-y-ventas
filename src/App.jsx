@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import BarraLateral from './components/layaut/sidebar'; 
-import ProtectedRoute from './routes/ProtectedRoute';
 
 // Importaciones de páginas
 import Login from './pages/Login';
@@ -19,7 +18,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Rutas protegidas con layout */}
+      {/* Rutas accesibles sin autenticación */}
       <Route 
         element={
           <div className="flex h-screen">
@@ -30,54 +29,12 @@ function App() {
           </div>
         }
       >
-        <Route 
-          index 
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="productos" 
-          element={
-            <ProtectedRoute>
-              <Productos />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="proveedores" 
-          element={
-            <ProtectedRoute>
-              <Proveedores />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="clientes" 
-          element={
-            <ProtectedRoute>
-              <Clientes />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="usuarios" 
-          element={
-            <ProtectedRoute>
-              <Usuarios />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="configuracion" 
-          element={
-            <ProtectedRoute>
-              <Configuracion />
-            </ProtectedRoute>
-          } 
-        />
+        <Route index element={<Dashboard />} />
+        <Route path="productos" element={<Productos />} />
+        <Route path="proveedores" element={<Proveedores />} />
+        <Route path="clientes" element={<Clientes />} />
+        <Route path="usuarios" element={<Usuarios />} />
+        <Route path="configuracion" element={<Configuracion />} />
       </Route>
 
       {/* Ruta de redirección por defecto */}
