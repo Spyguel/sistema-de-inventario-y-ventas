@@ -41,7 +41,11 @@ function Dashboard() {
         {/* Acciones Rápidas */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
           {acciones.map((accion, index) => (
-            <button key={index} className="p-4 bg-white rounded-lg shadow hover:shadow-md flex flex-col items-center">
+            <button 
+              key={index} 
+              className="p-4 bg-white rounded-lg shadow hover:shadow-md flex flex-col items-center transition-transform transform hover:scale-105"
+              onClick={() => alert(`${accion.titulo} clickeado`)}
+            >
               {accion.icono}
               <h3 className="text-md font-medium mt-2">{accion.titulo}</h3>
               <p className="text-xs text-gray-500">{accion.descripcion}</p>
@@ -52,11 +56,15 @@ function Dashboard() {
         {/* Módulos */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
           {modulos.map((modulo, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-md flex flex-col items-center text-center">
+            <button 
+              key={index} 
+              className="p-4 bg-gray-50 rounded-lg shadow-md flex flex-col items-center text-center transition-transform transform hover:scale-105"
+              onClick={() => alert(`${modulo.titulo} seleccionado`)}
+            >
               {modulo.icono}
               <h3 className="text-md font-medium mt-2">{modulo.titulo}</h3>
               <p className="text-xs text-gray-500">{modulo.descripcion}</p>
-            </div>
+            </button>
           ))}
         </div>
       </div>
