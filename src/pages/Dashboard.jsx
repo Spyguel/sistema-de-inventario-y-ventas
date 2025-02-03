@@ -1,126 +1,63 @@
-import { 
-  CubeIcon, 
-  ChartBarIcon, 
-  ServerIcon 
-} from '@heroicons/react/24/solid';
+import { CubeIcon, ChartBarIcon, ServerIcon, UserIcon, CogIcon } from '@heroicons/react/24/solid';
 
 function Dashboard() {
-  const caracteristicas = [
-    {
-      icono: <CubeIcon className="w-10 h-10 text-principal" />,
-      titulo: "Gestión de Inventario",
-      descripcion: "Control preciso de stock, entradas y salidas de productos."
-    },
-    {
-      icono: <ChartBarIcon className="w-10 h-10 text-principal" />,
-      titulo: "Reportes y Análisis",
-      descripcion: "Informes detallados de consumo, existencias y tendencias."
-    },
-    {
-      icono: <ServerIcon className="w-10 h-10 text-principal" />,
-      titulo: "Registro de Movimientos",
-      descripcion: "Seguimiento completo de todas las operaciones de almacén."
-    }
+  const estadisticas = [
+    { titulo: "Inventario total", valor: "123,456", cambio: "+12.5%", positivo: true },
+    { titulo: "Productos Bajos", valor: "23", cambio: "-5%", positivo: false },
+    { titulo: "Movimientos Hoy", valor: "89", cambio: "+8%", positivo: true }
   ];
 
-  const AccesoRapido = [
-    {
-      titulo: "Inventario",
-      descripcion: "Consulta y actualiza existencias",
-      icono: <CubeIcon className="w-6 h-6 text-principal mx-auto mb-2" />
-    },
-    {
-      titulo: "Proveedores",
-      descripcion: "Gestión de contactos",
-      icono: <ChartBarIcon className="w-6 h-6 text-principal mx-auto mb-2" />
-    },
-    {
-      titulo: "Movimientos",
-      descripcion: "Registro de entradas y salidas",
-      icono: <ServerIcon className="w-6 h-6 text-principal mx-auto mb-2" />
-    }
+  const acciones = [
+    { titulo: "Nuevo Producto", descripcion: "Añadir item al inventario", icono: <CubeIcon className="w-6 h-6 text-blue-500" /> },
+    { titulo: "Registrar Entrada", descripcion: "Entrada de mercancía", icono: <ChartBarIcon className="w-6 h-6 text-green-500" /> },
+    { titulo: "Registrar Salida", descripcion: "Salida de mercancía", icono: <ServerIcon className="w-6 h-6 text-red-500" /> }
+  ];
+
+  const modulos = [
+    { titulo: "Gestión de Inventario", descripcion: "Control preciso de stock, entradas y salidas de productos.", icono: <CubeIcon className="w-10 h-10 text-gray-600" /> },
+    { titulo: "Reportes y Análisis", descripcion: "Informes detallados de consumo, existencias y tendencias.", icono: <ChartBarIcon className="w-10 h-10 text-gray-600" /> },
+    { titulo: "Registro de Movimientos", descripcion: "Seguimiento completo de todas las operaciones de almacén.", icono: <ServerIcon className="w-10 h-10 text-gray-600" /> },
+    { titulo: "Gestión de Usuarios", descripcion: "Control de acceso y permisos para cada usuario.", icono: <UserIcon className="w-10 h-10 text-gray-600" /> },
+    { titulo: "Configuración", descripcion: "Ajustes del sistema y personalización.", icono: <CogIcon className="w-10 h-10 text-gray-600" /> }
   ];
 
   return (
-    <div className="min-h-screen bg-background_2 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Contenedor Principal con Diseño Responsive */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-          {/* Encabezado Adaptativo */}
-          <div className="bg-principal text-white p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between">
-              <div>
-                <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
-                  Panel de Control de Almacén
-                </h2>
-                <p className="text-sm sm:text-base text-white/80">
-                  Sistema integral para la gestión eficiente de inventario y recursos
-                </p>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-100 p-6">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 className="text-2xl font-semibold mb-4">Panel de Inicio</h1>
+        <p className="text-sm text-gray-500">28/1/2025, 17:16:52</p>
 
-          {/* Sección de Accesos Rápidos */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 sm:p-6 bg-background">
-            {AccesoRapido.map((acceso, index) => (
-              <div 
-                key={index} 
-                className="bg-white 
-                           rounded-xl 
-                           p-4 
-                           text-center 
-                           shadow-md 
-                           border 
-                           border-gray-100 
-                           hover:shadow-xl 
-                           hover:border-principal/20 
-                           transition-all 
-                           duration-300 
-                           cursor-pointer"
-              >
-                {acceso.icono}
-                <h3 className="font-semibold text-text-primary mb-2">{acceso.titulo}</h3>
-                <p className="text-text-secondary text-sm">{acceso.descripcion}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Sección de Características */}
-          <div className="p-4 sm:p-6 bg-background_2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-              {caracteristicas.map((caracteristica, index) => (
-                <div 
-                  key={index} 
-                  className="bg-white 
-                             rounded-xl 
-                             p-4 sm:p-6 
-                             flex 
-                             flex-col 
-                             items-center 
-                             text-center 
-                             shadow-md 
-                             border 
-                             border-gray-100
-                             hover:shadow-xl 
-                             hover:border-principal/20
-                             transition-all 
-                             duration-300 
-                             ease-in-out
-                             cursor-pointer"
-                >
-                  <div className="mb-3 sm:mb-4">
-                    {caracteristica.icono}
-                  </div>
-                  <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2">
-                    {caracteristica.titulo}
-                  </h3>
-                  <p className="text-text-secondary text-xs sm:text-sm">
-                    {caracteristica.descripcion}
-                  </p>
-                </div>
-              ))}
+        {/* Estadísticas */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+          {estadisticas.map((item, index) => (
+            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-md">
+              <h2 className="text-lg font-medium">{item.titulo}</h2>
+              <p className="text-2xl font-bold">{item.valor}</p>
+              <span className={`text-sm ${item.positivo ? 'text-green-600' : 'text-red-600'}`}>{item.cambio}</span>
             </div>
-          </div>
+          ))}
+        </div>
+
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
+          {acciones.map((accion, index) => (
+            <button key={index} className="p-4 bg-white rounded-lg shadow hover:shadow-md flex flex-col items-center">
+              {accion.icono}
+              <h3 className="text-md font-medium mt-2">{accion.titulo}</h3>
+              <p className="text-xs text-gray-500">{accion.descripcion}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Módulos */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+          {modulos.map((modulo, index) => (
+            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-md flex flex-col items-center text-center">
+              {modulo.icono}
+              <h3 className="text-md font-medium mt-2">{modulo.titulo}</h3>
+              <p className="text-xs text-gray-500">{modulo.descripcion}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
