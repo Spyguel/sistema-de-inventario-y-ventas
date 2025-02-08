@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 // Configuración de la base de datos sin .env
 const pool = new Pool({
@@ -46,6 +47,12 @@ const userSchema = Joi.object({
 const generateToken = (user) => {
     return jwt.sign({ id: user.id, email: user.email, roleId: user.id_rol }, 'clave_secreta', { expiresIn: '1h' });
 };
+
+app.use(cors({
+    origin: 'http://localhost:5173', // Permite solicitudes desde este origen
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras permitidas
+}));
 
 // Ruta para registrar usuarios
 app.post('/register', async (req, res) => {

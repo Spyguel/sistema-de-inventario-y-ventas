@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { useNavigate} from 'react-router-dom';
-import { 
-  HomeIcon, 
-  DocumentChartBarIcon, 
-  CubeIcon, 
-  TruckIcon, 
-  UserGroupIcon, 
-  UsersIcon, 
-  CogIcon, 
+import { useNavigate } from 'react-router-dom';
+import {
+  HomeIcon,
+  DocumentChartBarIcon,
+  CubeIcon,
+  TruckIcon,
+  UserGroupIcon,
+  UsersIcon,
+  CogIcon,
   ArrowLeftOnRectangleIcon,
-  ChevronRightIcon, 
-  ChevronLeftIcon 
+  ChevronRightIcon,
+  ChevronLeftIcon
 } from '@heroicons/react/24/solid';
 
 function BarraLateral() {
@@ -43,17 +43,17 @@ function BarraLateral() {
   const handleMenuClick = (path) => {
     if (path === '/logout') {
       // Lógica de cierre de sesión
-      localStorage.removeItem('isAuthenticated');
-      navigate('/login');
+      localStorage.removeItem('token'); // Elimina el token de autenticación
+      navigate('/login'); // Redirige al login
     } else {
-      navigate(path);
+      navigate(path); // Navega a la ruta correspondiente
     }
   };
 
   return (
     <div className={`${open ? 'w-72' : 'w-20'} h-screen p-4 pt-9 bg-principal relative transition-all duration-300`}>
       {/* Botón de toggle */}
-      <div 
+      <div
         className="absolute cursor-pointer rounded-full -right-4 top-9 w-8 h-8 flex items-center justify-center bg-accent-soft-blue border-2 border-principal transition-colors duration-300 hover:bg-detalles"
         onClick={() => setOpen(!open)}
       >
@@ -77,8 +77,8 @@ function BarraLateral() {
         {Menus.map((menu, index) => {
           const Icon = iconMap[menu.src];
           return (
-            <li 
-              key={index} 
+            <li
+              key={index}
               className={`flex rounded-md p-2 cursor-pointer hover:bg-accent-soft-blue text-white text-sm items-center gap-x-4 ${menu.gap ? 'mt-9' : 'mt-2'}`}
               onClick={() => handleMenuClick(menu.path)}
             >
