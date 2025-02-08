@@ -17,10 +17,11 @@ function Login() {
                 },
                 body: JSON.stringify({ email, password }),
             });
-
+    
             const data = await response.json();
             if (response.ok) {
-                localStorage.setItem('token', data.token); // Almacenar el token en localStorage
+                localStorage.setItem('token', data.token); // Almacenar el token
+                localStorage.setItem('rol', data.rol); // Almacenar el nombre del rol
                 navigate('/dashboard'); // Redirigir al dashboard
             } else {
                 alert(data.error || 'Error al iniciar sesión');
