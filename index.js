@@ -5,6 +5,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const Joi = require('joi');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 // Configuración de la base de datos sin .env
 const pool = new Pool({
@@ -47,6 +48,12 @@ const generateToken = (user) => {
     return jwt.sign({ id: user.id, email: user.email, roleId: user.id_rol }, 'clave_secreta', { expiresIn: '1h' });
 };
 
+app.use(cors({
+    origin: 'http://localhost:5173', // Permite solicitudes desde este origen
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
+    allowedHeaders: ['Content-Type', 'Authorization'], // Cabeceras permitidas
+}));
+
 // Ruta para registrar usuarios
 app.post('/register', async (req, res) => {
     try {
@@ -74,9 +81,13 @@ app.post('/register', async (req, res) => {
 app.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        // Consulta adaptada al estilo de tu ejemplo con los nombres de columnas de PostgreSQL
+
+        // Consulta modificada para obtener el nombre del rol
         const result = await pool.query(
-            'SELECT "ID_usuario", "ID_rol", email, "contraseña", activo FROM public."USUARIO" WHERE email = $1', 
+            `SELECT u."ID_usuario", u."ID_rol", u.email, u."contraseña", u.activo, r."nombre" AS rol_nombre
+             FROM public."USUARIO" u
+             JOIN public."ROL" r ON u."ID_rol" = r."ID_rol"
+             WHERE u.email = $1`,
             [email]
         );
 
@@ -88,7 +99,11 @@ app.post('/login', async (req, res) => {
         if (!isValidPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
 
         const token = generateToken(user);
-        res.json({ message: 'Autenticación exitosa', token });
+        res.json({ 
+            message: 'Autenticación exitosa', 
+            token, 
+            rol: user.rol_nombre // Devuelve el nombre del rol
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Error interno del servidor' });
