@@ -55,11 +55,19 @@ function Usuarios({ permisos: propsPermisos }) {
         { id: 17, nombre: 'ver pedidos' }
     ]);
 
-    const [modalState, setModalState] = useState(false);
-    const [modoEdicion, setModoEdicion] = useState(false);
-    const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-    const [rolSeleccionado, setRolSeleccionado] = useState(null);
-    const [permisoSeleccionado, setPermisoSeleccionado] = useState(null);
+    // Separate modal states for each form type
+    const [modals, setModals] = useState({
+        usuarios: false,
+        roles: false,
+        permisos: false
+    });
+
+    const [selectedItems, setSelectedItems] = useState({
+        usuario: null,
+        rol: null,
+        permiso: null
+    });
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
 
@@ -83,11 +91,42 @@ function Usuarios({ permisos: propsPermisos }) {
         setFiltroEstado(estado);
     };
 
+    // Handle opening specific modal
+    const handleOpenModal = (type) => {
+        setModals({
+            usuarios: false,
+            roles: false,
+            permisos: false,
+            [type]: true
+        });
+    };
+
+    // Handle closing specific modal
+    const handleCloseModal = (type) => {
+        setModals(prev => ({
+            ...prev,
+            [type]: false
+        }));
+        setSelectedItems(prev => ({
+            ...prev,
+            [type.slice(0, -1)]: null
+        }));
+    };
+
+    const handleAddButton = () => {
+        setSelectedItems({
+            usuario: null,
+            rol: null,
+            permiso: null
+        });
+        handleOpenModal(activeTab);
+    };
+
     const handleGuardarUsuario = (nuevoUsuario) => {
-        if (modoEdicion && usuarioSeleccionado) {
+        if (selectedItems.usuario) {
             setUsuarios(prev => 
                 prev.map(u => 
-                    u.id === usuarioSeleccionado.id 
+                    u.id === selectedItems.usuario.id 
                         ? { ...nuevoUsuario, id: u.id } 
                         : u
                 )
@@ -100,9 +139,25 @@ function Usuarios({ permisos: propsPermisos }) {
             };
             setUsuarios(prev => [...prev, usuarioConId]);
         }
-        setModalState(false);
-        setModoEdicion(false);
-        setUsuarioSeleccionado(null);
+        handleCloseModal('usuarios');
+    };
+
+    const handleGuardarRol = (nuevoRol) => {
+        if (selectedItems.rol) {
+            setRoles(prev => prev.map(r => r.id === selectedItems.rol.id ? nuevoRol : r));
+        } else {
+            setRoles(prev => [...prev, { ...nuevoRol, id: Date.now() }]);
+        }
+        handleCloseModal('roles');
+    };
+
+    const handleGuardarPermiso = (nuevoPermiso) => {
+        if (selectedItems.permiso) {
+            setPermisos(prev => prev.map(p => p.id === selectedItems.permiso.id ? nuevoPermiso : p));
+        } else {
+            setPermisos(prev => [...prev, { ...nuevoPermiso, id: Date.now() }]);
+        }
+        handleCloseModal('permisos');
     };
 
     const handleEliminarUsuario = (id) => {
@@ -205,11 +260,7 @@ function Usuarios({ permisos: propsPermisos }) {
                         <Button 
                             className="transform transition-transform duration-200 hover:scale-105 flex items-center gap-2"
                             variant="success" 
-                            onClick={() => {
-                                setModoEdicion(false);
-                                setUsuarioSeleccionado(null);
-                                setModalState(true);
-                            }}
+                            onClick={handleAddButton}
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -222,7 +273,10 @@ function Usuarios({ permisos: propsPermisos }) {
                         {activeTab === 'usuarios' && (
                             <UsuariosTable
                                 usuarios={usuariosFiltrados}
-                                onEdit={setUsuarioSeleccionado}
+                                onEdit={(usuario) => {
+                                    setSelectedItems(prev => ({ ...prev, usuario }));
+                                    handleOpenModal('usuarios');
+                                }}
                                 onDelete={handleEliminarUsuario}
                                 onToggleActive={handleToggleActive}
                             />
@@ -230,14 +284,20 @@ function Usuarios({ permisos: propsPermisos }) {
                         {activeTab === 'roles' && (
                             <RolesTable 
                                 roles={roles}
-                                onEdit={setRolSeleccionado}
+                                onEdit={(rol) => {
+                                    setSelectedItems(prev => ({ ...prev, rol }));
+                                    handleOpenModal('roles');
+                                }}
                                 onDelete={(id) => setRoles(prev => prev.filter(r => r.id !== id))}
                             />
                         )}
                         {activeTab === 'permisos' && (
                             <PermisosTable 
                                 permisos={permisos}
-                                onEdit={setPermisoSeleccionado}
+                                onEdit={(permiso) => {
+                                    setSelectedItems(prev => ({ ...prev, permiso }));
+                                    handleOpenModal('permisos');
+                                }}
                                 onDelete={(id) => setPermisos(prev => prev.filter(p => p.id !== id))}
                             />
                         )}
@@ -245,67 +305,52 @@ function Usuarios({ permisos: propsPermisos }) {
                 </div>
             </div>
 
-            {modalState && activeTab === 'usuarios' && (
+            {/* Modal rendering based on specific states */}
+            {modals.usuarios && (
                 <UsuarioForm
-                    isOpen={modalState}
-                    onClose={() => setModalState(false)}
-                    title={usuarioSeleccionado ? 'Editar Usuario' : 'Agregar Usuario'}
-                    usuarioSeleccionado={usuarioSeleccionado}
+                    isOpen={modals.usuarios}
+                    onClose={() => handleCloseModal('usuarios')}
+                    title={selectedItems.usuario ? 'Editar Usuario' : 'Agregar Usuario'}
+                    usuarioSeleccionado={selectedItems.usuario}
                     onGuardar={handleGuardarUsuario}
                     permisos={propsPermisos}
                 />
             )}
 
-            {modalState && activeTab === 'roles' && (
+            {modals.roles && (
                 <RolForm
-                    isOpen={modalState}
-                    onClose={() => setModalState(false)}
-                    title={rolSeleccionado ? 'Editar Rol' : 'Agregar Rol'}
-                    rolSeleccionado={rolSeleccionado}
-                    onGuardar={(nuevoRol) => {
-                        if (rolSeleccionado) {
-                                setRoles(prev => prev.map(r => r.id === rolSeleccionado.id ? nuevoRol : r));
-                            } else {
-                                setRoles(prev => [...prev, { ...nuevoRol, id: Date.now() }]);
-                            }
-                            setModalState(false);
-                            setRolSeleccionado(null);
-                        }}
-                    />
-                )}
-    
-                {modalState && activeTab === 'permisos' && (
-                    <PermisosForm
-                        isOpen={modalState}
-                        onClose={() => setModalState(false)}
-                        title={permisoSeleccionado ? 'Editar Permiso' : 'Agregar Permiso'}
-                        permisoSeleccionado={permisoSeleccionado}
-                        onGuardar={(nuevoPermiso) => {
-                            if (permisoSeleccionado) {
-                                setPermisos(prev => prev.map(p => p.id === permisoSeleccionado.id ? nuevoPermiso : p));
-                            } else {
-                                setPermisos(prev => [...prev, { ...nuevoPermiso, id: Date.now() }]);
-                            }
-                            setModalState(false);
-                            setPermisoSeleccionado(null);
-                        }}
-                    />
-                )}
-            </div>
-        );
-    }
-    
-    Usuarios.propTypes = {
-        permisos: PropTypes.arrayOf(
-            PropTypes.shape({
-                id: PropTypes.number.isRequired,
-                nombre: PropTypes.string.isRequired
-            })
-        ).isRequired
-    };
-    
-    Usuarios.defaultProps = {
-        permisos: []
-    };
-    
-    export default Usuarios;
+                    isOpen={modals.roles}
+                    onClose={() => handleCloseModal('roles')}
+                    title={selectedItems.rol ? 'Editar Rol' : 'Agregar Rol'}
+                    rolSeleccionado={selectedItems.rol}
+                    onGuardar={handleGuardarRol}
+                />
+            )}
+
+            {modals.permisos && (
+                <PermisosForm
+                    isOpen={modals.permisos}
+                    onClose={() => handleCloseModal('permisos')}
+                    title={selectedItems.permiso ? 'Editar Permiso' : 'Agregar Permiso'}
+                    permisoSeleccionado={selectedItems.permiso}
+                    onGuardar={handleGuardarPermiso}
+                />
+            )}
+        </div>
+    );
+}
+
+Usuarios.propTypes = {
+    permisos: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            nombre: PropTypes.string.isRequired
+        })
+    ).isRequired
+};
+
+Usuarios.defaultProps = {
+    permisos: []
+};
+
+export default Usuarios;

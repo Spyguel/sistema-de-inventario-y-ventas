@@ -1,113 +1,158 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import Button from "../common/button";
+import FormModal from '../common/common/Forms/FormModal';
+import Form from '../common/common/Forms/Form';
+import { TextInput } from '../common/common/Forms/Imputs/index';
+import Message from '../common/common/Messages/Message';
 
-const UserModal = ({ 
-  modalState, 
-  setModalState, 
-  handleGuardarUsuario, 
-  usuarioSeleccionado = null 
+const RolForm = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  onGuardar, 
+  rolSeleccionado 
 }) => {
-  const [modoEdicion] = useState(!!usuarioSeleccionado);
+  // Estado del formulario
+  const [formData, setFormData] = useState({
+    nombre: '',
+    descripcion: '',
+    estado: 'Activo' // Estado por defecto
+  });
+
+  // Estado de errores
+  const [errors, setErrors] = useState({});
+  const [messageModalOpen, setMessageModalOpen] = useState(false); // Estado para el modal de mensaje
+  const [toastMessage, setToastMessage] = useState(''); // Estado para el mensaje del toast
+  const [toastType, setToastType] = useState('success'); // Estado para el tipo de mensaje del toast
+
+  // Efecto para cargar datos en edición
+  useEffect(() => {
+    if (rolSeleccionado) {
+      setFormData({
+        nombre: rolSeleccionado.nombre,
+        descripcion: rolSeleccionado.descripcion,
+        estado: rolSeleccionado.estado || 'Activo'
+      });
+    } else {
+      resetForm();
+    }
+  }, [rolSeleccionado]);
+
+  // Validación del formulario
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.nombre.trim()) {
+      newErrors.nombre = 'El nombre es requerido';
+    }
+
+    if (!formData.descripcion.trim()) {
+      newErrors.descripcion = 'La descripción es requerida';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Resetear formulario
+  const resetForm = () => {
+    setFormData({
+      nombre: '',
+      descripcion: '',
+      estado: 'Activo'
+    });
+    setErrors({});
+    setMessageModalOpen(false); 
+  };
+
+  // Manejar envío del formulario
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onGuardar({
+        ...formData,
+        id: rolSeleccionado?.id || Date.now() // Asignar ID si es nuevo
+      });
+      setMessageModalOpen(true); // Abrir el modal de mensaje
+      setToastMessage('Rol guardado correctamente.'); // Mensaje de éxito
+      setToastType('success');
+      onClose();
+      resetForm();
+    } else {
+      setMessageModalOpen(true); // Abrir el modal de mensaje
+      setToastMessage('Error al guardar el rol. Verifique los campos.'); // Mensaje de error
+      setToastType('error');
+    }
+  };
 
   return (
     <>
-      {modalState && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              {modoEdicion ? 'Editar' : 'Agregar'} Usuario
-            </h2>
-            <form 
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const nuevoUsuario = {
-                  nombre: formData.get('nombre'),
-                  email: formData.get('email'),
-                  rol: formData.get('rol'),
-                  estado: formData.get('estado') || 'Activo'
-                };
-                handleGuardarUsuario(nuevoUsuario);
-              }} 
-              className="space-y-4"
+      <FormModal
+        isOpen={isOpen}
+        onClose={() => {
+          onClose();
+          resetForm();
+        }}
+        title={title}
+      >
+        <Form
+          onSubmit={handleSubmit}
+          onCancel={() => {
+            onClose();
+            resetForm();
+          }}
+          cancelText="Cancelar"
+          submitText={rolSeleccionado ? 'Actualizar' : 'Crear'}
+        >
+          <TextInput
+            label="Nombre del Rol"
+            name="nombre"
+            value={formData.nombre}
+            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+            error={errors.nombre}
+            placeholder="Ej: Administrador"
+            autoFocus
+          />
+
+          <TextInput
+            label="Descripción"
+            name="descripcion"
+            value={formData.descripcion}
+            onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+            error={errors.descripcion}
+            placeholder="Descripción del rol"
+          />
+
+          <div>
+            <label className="block text-gray-700 mb-2">Estado</label>
+            <select
+              name="estado"
+              value={formData.estado}
+              onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
+              className="w-full px-3 py-2 border rounded-md"
             >
-              <div>
-                <label className="block text-gray-700 mb-2">Nombre Completo</label>
-                <input 
-                  type="text"
-                  name="nombre"
-                  defaultValue={usuarioSeleccionado?.nombre || ''}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Correo Electrónico</label>
-                <input 
-                  type="email"
-                  name="email"
-                  defaultValue={usuarioSeleccionado?.email || ''}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Rol</label>
-                <select
-                  name="rol"
-                  defaultValue={usuarioSeleccionado?.rol || ''}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                >
-                  <option value="">Seleccionar Rol</option>
-                  <option value="Administrador">Administrador</option>
-                  <option value="Empleado">Empleado</option>
-                  <option value="Supervisor">Supervisor</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-700 mb-2">Estado</label>
-                <select
-                  name="estado"
-                  defaultValue={usuarioSeleccionado?.estado || 'Activo'}
-                  className="w-full px-3 py-2 border rounded-md"
-                  required
-                >
-                  <option value="Activo">Activo</option>
-                  <option value="Inactivo">Inactivo</option>
-                </select>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button 
-                  type="submit" 
-                  variant="success"
-                >
-                  {modoEdicion ? 'Actualizar' : 'Crear'} Usuario
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="secondary"
-                  onClick={() => {
-                    setModalState(false);
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </form>
+              <option value=" Activo">Activo</option>
+              <option value="Inactivo">Inactivo</option>
+            </select>
           </div>
-        </div>
-      )}
+        </Form>
+      </FormModal>
+      <Message 
+        isOpen={messageModalOpen} 
+        onClose={() => setMessageModalOpen(false)} 
+        message={toastMessage} 
+        type={toastType} 
+      /> {/* Mostrar el modal de mensaje */}
     </>
   );
 };
 
-UserModal.propTypes = {
-  modalState: PropTypes.bool.isRequired,
-  setModalState: PropTypes.func.isRequired,
-  handleGuardarUsuario: PropTypes.func.isRequired,
-  usuarioSeleccionado: PropTypes.object
+RolForm.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.string.isRequired,
+  onGuardar: PropTypes.func.isRequired,
+  rolSeleccionado: PropTypes.object
 };
 
-export default UserModal;
+export default RolForm;
