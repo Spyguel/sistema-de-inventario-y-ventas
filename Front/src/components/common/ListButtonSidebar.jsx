@@ -4,57 +4,57 @@ import {HomeIcon, DocumentChartBarIcon, CubeIcon, TruckIcon, UserGroupIcon, User
   export const ListButtonsSidebar = [
     { 
       id: 'btn_home',
-      name: 'Inicio',
+      title: 'Inicio',
       path: '/',
       icon: HomeIcon,
       gap: true
     },
     { 
       id: 'btn_informes',
-      name: 'Informes',
+      title: 'Informes',
       path: '/informes',
       icon: DocumentChartBarIcon
     },
     { 
       id: 'btn_productos',
-      name: 'Productos',
+      title: 'Productos',
       path: '/productos',
       icon: CubeIcon
     },
     { 
       id: 'btn_proveedores',
-      name: 'Proveedores',
+      title: 'Proveedores',
       path: '/proveedores',
       icon: TruckIcon
     },
     { 
       id: 'btn_clientes',
-      name: 'Clientes',
+      title: 'Clientes',
       path: '/clientes',
       icon: UserGroupIcon
     },
     { 
       id: 'btn_movimientos',
-      name: 'Movimientos',
+      title: 'Movimientos',
       path: '/movimientos',
       icon: CubeIcon
     },
     { 
       id: 'btn_usuarios',
-      name: 'Usuarios',
+      title: 'Usuarios',
       path: '/usuarios',
       icon: UsersIcon,
       gap: true
     },
     { 
       id: 'btn_configuracion',
-      name: 'Configuración',
+      title: 'Configuración',
       path: '/configuracion',
       icon: CogIcon
     },
     { 
       id: 'btn_logout',
-      name: 'Cerrar Sesión',
+      title: 'Cerrar Sesión',
       path: '/logout',
       icon: ArrowLeftOnRectangleIcon
     }
