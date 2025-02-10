@@ -36,23 +36,10 @@ function Usuarios({ permisos: propsPermisos }) {
     ]);
 
     const [permisos, setPermisos] = useState([
-        { id: 1, nombre: 'Crear Usuarios' },
-        { id: 2, nombre: 'Editar Usuarios' },
-        { id: 3, nombre: 'Eliminar Usuarios' },
-        { id: 4, nombre: 'Crear Roles' },
-        { id: 5, nombre: 'Editar Roles' },
-        { id: 6, nombre: 'Eliminar Roles' },
-        { id: 7, nombre: 'Crear Permisos' },
-        { id: 8, nombre: 'Editar Permisos' },
-        { id: 9, nombre: 'Eliminar Permisos' },
-        { id: 10, nombre: 'Crear Productos' },
-        { id: 11, nombre: 'Editar Productos' },
-        { id: 12, nombre: 'Eliminar Productos' },
-        { id: 13, nombre: 'ver estadistica'},
-        { id: 14, nombre: 'ver reportes' },
-        { id: 15, nombre: 'ver proveedores' },
-        { id: 16, nombre: 'ver clientes' },
-        { id: 17, nombre: 'ver pedidos' }
+        { id: 1, nombre: 'Crear Usuarios', descripcion: 'Permite crear nuevos usuarios' },
+        { id: 2, nombre: 'Editar Usuarios', descripcion: 'Permite editar usuarios existentes' },
+        { id: 3, nombre: 'Eliminar Usuarios', descripcion: 'Permite eliminar usuarios existentes' },
+        { id: 4, nombre: 'Crear Roles', descripcion: 'Permite crear nuevos roles' },
     ]);
 
     // Separate modal states for each form type
@@ -158,6 +145,8 @@ function Usuarios({ permisos: propsPermisos }) {
             setPermisos(prev => [...prev, { ...nuevoPermiso, id: Date.now() }]);
         }
         handleCloseModal('permisos');
+        console.log("Permisos en tabla:", permisos);
+
     };
 
     const handleEliminarUsuario = (id) => {

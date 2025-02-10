@@ -4,7 +4,7 @@ import FormModal from '../common/common/Forms/FormModal';
 import Form from '../common/common/Forms/Form';
 import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
-import {ListButtonsSidebar} from '../common/ListButtonSidebar';
+import { ListButtonsSidebar } from '../common/ListButtonSidebar';
 
 const PermisoForm = ({
   isOpen,
@@ -16,8 +16,7 @@ const PermisoForm = ({
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
-    buttonId: '', // ID del botón del sistema
-    activo: true
+    id: '', 
   });
 
   const [errors, setErrors] = useState({});
@@ -28,7 +27,7 @@ const PermisoForm = ({
   // Convertimos los botones del sistema a opciones para el select
   const buttonOptions = ListButtonsSidebar.map(button => ({
     value: button.id,
-    label: button.name
+    label: button.title // Ensure this is the correct property
   }));
 
   useEffect(() => {
@@ -36,8 +35,7 @@ const PermisoForm = ({
       setFormData({
         nombre: permisoSeleccionado.Nombre,
         descripcion: permisoSeleccionado.Descripcion,
-        buttonId: permisoSeleccionado.ButtonID,
-        activo: permisoSeleccionado.Activo
+        id: permisoSeleccionado.id
       });
     } else {
       resetForm();
@@ -51,8 +49,8 @@ const PermisoForm = ({
       newErrors.nombre = 'El nombre del permiso es requerido';
     }
 
-    if (!formData.buttonId) {
-      newErrors.buttonId = 'Debe seleccionar un componente del sistema';
+    if (!formData.id) {
+      newErrors.id = 'Debe seleccionar un componente del sistema';
     }
 
     setErrors(newErrors);
@@ -63,8 +61,7 @@ const PermisoForm = ({
     setFormData({
       nombre: '',
       descripcion: '',
-      buttonId: '',
-      activo: true
+      id: '',
     });
     setErrors({});
     setMessageModalOpen(false);
@@ -74,10 +71,9 @@ const PermisoForm = ({
     e.preventDefault();
     if (validateForm()) {
       onGuardar({
-        ButtonID: formData.buttonId,
-        Nombre: formData.nombre,
-        Descripcion: formData.descripcion,
-        Activo: formData.activo,
+        id: formData.id,
+        nombre: formData.nombre,
+        descripcion: formData.descripcion,
         ID_permiso: permisoSeleccionado?.ID_permiso || Date.now()
       });
       setMessageModalOpen(true);
@@ -91,11 +87,6 @@ const PermisoForm = ({
       setToastType('error');
     }
   };
-
-  const estadoOptions = [
-    { value: true, label: 'Activo' },
-    { value: false, label: 'Inactivo' }
-  ];
 
   return (
     <>
@@ -118,7 +109,7 @@ const PermisoForm = ({
         >
           <TextInput
             label="Nombre del Permiso"
-            name="nombre"
+            title="nombre"
             value={formData.nombre}
             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
             error={errors.nombre}
@@ -128,7 +119,7 @@ const PermisoForm = ({
 
           <TextInput
             label="Descripción"
-            name="descripcion"
+            title="descripcion"
             value={formData.descripcion}
             onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
             error={errors.descripcion}
@@ -137,20 +128,19 @@ const PermisoForm = ({
 
           <SelectInput
             label="Componente del Sistema"
-            name="buttonId"
-            value={formData.buttonId}
-            onChange={(e) => setFormData({ ...formData, buttonId: e.target.value })}
+            title="id"
+            value={formData.id}
+            onChange={(e) => setFormData({ ...formData, id: e.target.value })}
             options={buttonOptions}
-            error={errors.buttonId}
+            error={errors.id}
           />
 
-          <SelectInput
-            label="Estado"
-            name="activo"
-            value={formData.activo}
-            onChange={(e) => setFormData({ ...formData, activo: e.target.value === 'true' })}
-            options={estadoOptions}
-          />
+          {/* Display the selected button's title */}
+          {formData.id && (
+            <div className="mt-2 text-gray-700">
+              Componente seleccionado: {buttonOptions.find(option => option.value === formData.id)?.label}
+            </div>
+          )}
         </Form>
       </FormModal>
       <Message 

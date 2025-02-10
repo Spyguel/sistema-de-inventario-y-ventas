@@ -17,6 +17,7 @@ const PermisosTable = ({
               <tr className="bg-principal text-white">
                 <th className="p-2 cursor-pointer hover:bg-slate-500" onClick={() => requestSort('id')}>ID</th>
                 <th className="p-2 cursor-pointer hover:bg-slate-500" onClick={() => requestSort('nombre')}>nombre</th>
+                <th className="p-2 cursor-pointer hover:bg-slate-500" onClick={() => requestSort('descripcion')}>Descripción</th>
                 <th className="p-2">Acciones</th>
               </tr>
             </thead>
@@ -33,6 +34,7 @@ const PermisosTable = ({
                   >
                     <td className="p-2 text-center">{permiso.id}</td>
                     <td className="p-2 text-center">{permiso.nombre}</td>
+                    <td className="p-2 text-center">{permiso.descripcion}</td>
                     <td className="p-2 text-center flex justify-center space-x-2">
                       {/* Botón de Editar Permiso */}
                       <Button 
