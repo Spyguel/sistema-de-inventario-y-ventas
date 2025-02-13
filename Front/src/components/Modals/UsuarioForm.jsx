@@ -1,134 +1,61 @@
-import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import FormModal from '../common/common/Forms/FormModal';
 import Form from '../common/common/Forms/Form';
 import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
+import { useState } from 'react';
 
-const UsuarioForm = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  onGuardar, 
-  usuarioSeleccionado,
-  rolesDisponibles 
-}) => {
-  // Estado del formulario
-  const [formData, setFormData] = useState({
-    email: '',
-    rol: '',
-    contraseña: '',
-    activo: true
-  });
+const UsuarioForm = ({ isOpen, onClose, title }) => {
+  const rolEmpleado = 2; // Valor fijo para "Empleado"
 
-  // Estado de errores
-  const [errors, setErrors] = useState({});
-  const [messageModalOpen, setMessageModalOpen] = useState(false); // Estado para el modal de mensaje
-  const [toastMessage, setToastMessage] = useState(''); // Estado para el mensaje del toast
-  const [toastType, setToastType] = useState('success'); // Estado para el tipo de mensaje del toast
+  // Estados para los inputs
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState({ text: '', type: '' });
 
-  // Efecto para cargar datos en edición
-  useEffect(() => {
-    if (usuarioSeleccionado) {
-      setFormData({
-        email: usuarioSeleccionado.Email,
-        rol: usuarioSeleccionado.ID_rol,
-        contraseña: '',
-        activo: usuarioSeleccionado.Activo
-      });
-    } else {
-      resetForm();
-    }
-  }, [usuarioSeleccionado]);
-
-  // Validación del formulario
-  const validateForm = () => {
-    const newErrors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Correo electrónico inválido';
-    }
-
-    if (!formData .rol) {
-      newErrors.rol = 'Debe seleccionar un rol';
-    }
-
-    if (!formData.contraseña.trim()) {
-      newErrors.contraseña = 'La contraseña es requerida';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Resetear formulario
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      rol: '',
-      contraseña: '',
-      activo: true
-    });
-    setErrors({});
-    setMessageModalOpen(false); // Cerrar el modal de mensaje
-  };
-
-  // Manejar envío del formulario
-  const handleSubmit = (e) => {
+  // Función para enviar los datos al backend
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      onGuardar({
-        ID_rol: formData.rol,
-        Email: formData.email,
-        Contraseña: formData.contraseña,
-        Activo: formData.activo,
-        ID_usuario: usuarioSeleccionado?.ID_usuario || Date.now()
+    try {
+      const response = await fetch('http://localhost:3000/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          roleId: rolEmpleado, // Siempre "Empleado"
+        }),
       });
-      setMessageModalOpen(true); // Abrir el modal de mensaje
-      setToastMessage('Usuario guardado correctamente.'); // Mensaje de éxito
-      setToastType('success');
-      onClose();
-      resetForm();
-    } else {
-      setMessageModalOpen(true); // Abrir el modal de mensaje
-      setToastMessage('Error al guardar el usuario. Verifique los campos.'); // Mensaje de error
-      setToastType('error');
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al registrar usuario');
+      }
+
+      setMessage({ text: 'Usuario registrado con éxito', type: 'success' });
+
+      // Limpiar el formulario
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      setMessage({ text: error.message, type: 'error' });
     }
   };
-
-  // Opciones para selects
-  const estadoOptions = [
-    { value: true, label: 'Activo' },
-    { value: false, label: 'Inactivo' }
-  ];
 
   return (
     <>
-      <FormModal
-        isOpen={isOpen}
-        onClose={() => {
-          onClose();
-          resetForm();
-        }}
-        title={title}
-      >
-        <Form
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            onClose();
-            resetForm();
-          }}
-          cancelText="Cancelar"
-          submitText={usuarioSeleccionado ? 'Actualizar' : 'Crear'}
-        >
+      <FormModal isOpen={isOpen} onClose={onClose} title={title}>
+        <Form onSubmit={handleFormSubmit} onCancel={onClose} cancelText="Cancelar" submitText="Crear">
           <TextInput
             label="Correo electrónico"
             name="email"
             type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            error={errors.email}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error=""
             placeholder="Ej: juan@empresa.com"
             autoFocus
           />
@@ -137,36 +64,26 @@ const UsuarioForm = ({
             label="Contraseña"
             name="contraseña"
             type="password"
-            value={formData.contraseña}
-            onChange={(e) => setFormData({ ...formData, contraseña: e.target.value })}
-            error={errors.contraseña}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error=""
             placeholder="Ingrese su contraseña"
           />
 
           <SelectInput
             label="Rol"
             name="rol"
-            value={formData.rol}
-            onChange={(e) => setFormData({ ...formData, rol: e.target.value })}
-            options={rolesDisponibles}
-            error={errors.rol}
-          />
-
-          <SelectInput
-            label="Estado"
-            name="activo"
-            value={formData.activo}
-            onChange={(e) => setFormData({ ...formData, activo: e.target.value === 'true' })}
-            options={estadoOptions}
+            value={rolEmpleado}
+            onChange={() => {}}
+            options={[{ value: 2, label: 'Empleado' }]}
+            error=""
+            disabled
           />
         </Form>
       </FormModal>
-      <Message 
-        isOpen={messageModalOpen} 
-        onClose={() => setMessageModalOpen(false)} 
-        message={toastMessage} 
-        type={toastType} 
-      /> {/* Mostrar el modal de mensaje */}
+
+      {/* Mensaje de éxito o error */}
+      <Message isOpen={!!message.text} onClose={() => setMessage({ text: '', type: '' })} message={message.text} type={message.type} />
     </>
   );
 };
@@ -175,9 +92,6 @@ UsuarioForm.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
-  onGuardar: PropTypes.func.isRequired,
-  usuarioSeleccionado: PropTypes.object,
-  rolesDisponibles: PropTypes.array.isRequired
 };
 
 export default UsuarioForm;
