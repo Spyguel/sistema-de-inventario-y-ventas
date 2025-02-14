@@ -13,20 +13,16 @@ function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
     const [usuarios, setUsuarios] = useState([
         { 
-            id: 1, 
-            nombre: 'Juan Pérez', 
+            id: 1,
             email: 'juan.perez@ejemplo.com',
             rol: 'Administrador',
-            estado: 'Activo',
-            permisos: [1, 2]
+            estado: 'Activo'
         },
         { 
             id: 2, 
-            nombre: 'María González', 
             email: 'maria.gonzalez@ejemplo.com',
             rol: 'Empleado',
             estado: 'Activo',
-            permisos: [2]
         }
     ]);
     const [roles, setRoles] = useState([
@@ -61,7 +57,6 @@ function Usuarios({ permisos: propsPermisos }) {
     const usuariosFiltrados = useMemo(() => {
         return usuarios.filter(usuario => {
             const coincideBusqueda = 
-                usuario.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 usuario.rol.toLowerCase().includes(searchTerm.toLowerCase());
 
@@ -167,7 +162,7 @@ function Usuarios({ permisos: propsPermisos }) {
     };
 
     return (
-        <div className="w-full p-4 flex flex-col mt-5 rounded-lg shadow-md overflow-hidden border-2 bg-white max-h-screen">
+        <div className="w-full p-4 flex flex-col mt-5 rounded-lg shadow-md overflow-hidden border-2 bg-white min-h-[92vh]">
             <div className="sticky top-0 z-50 bg-white">
                 <div className="w-full flex items-center justify-between">
                     <div>
@@ -225,7 +220,7 @@ function Usuarios({ permisos: propsPermisos }) {
                 </div>
             </div>
 
-            <div className={`rounded-b-lg p-4 transition-all duration-300 z-50 ${
+            <div className={`rounded-b-lg rounded-tl-lg p-4 transition-all duration-300 z-50 min-h-[83vh] ${
                 activeTab === 'usuarios' 
                     ? 'bg-gradient-to-br from-accent-soft-blue to-accent-soft-blue/80' 
                     : activeTab === 'roles' 

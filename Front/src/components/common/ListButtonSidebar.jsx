@@ -5,7 +5,7 @@ import {HomeIcon, DocumentChartBarIcon, CubeIcon, TruckIcon, UserGroupIcon, User
     { 
       id: 'btn_home',
       title: 'Inicio',
-      path: '/',
+      path: '/dashboard',
       icon: HomeIcon,
       gap: true
     },
