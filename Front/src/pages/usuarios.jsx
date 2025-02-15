@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '../components/common/button.jsx';
 import UsuariosTable from '../components/Tablas/UsuariosTable.jsx';
 import RolesTable from '../components/Tablas/RolesTable.jsx';
@@ -11,20 +11,7 @@ import PropTypes from 'prop-types';
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
-    const [usuarios, setUsuarios] = useState([
-        { 
-            id: 1,
-            email: 'juan.perez@ejemplo.com',
-            rol: 'Administrador',
-            estado: 'Activo'
-        },
-        { 
-            id: 2, 
-            email: 'maria.gonzalez@ejemplo.com',
-            rol: 'Empleado',
-            estado: 'Activo',
-        }
-    ]);
+    const [usuarios, setUsuarios] = useState([]); // Lista de usuarios vacía
     const [roles, setRoles] = useState([
         { id: 1, nombre: 'Administrador', descripcion: 'Rol con todos los permisos' },
         { id: 2, nombre: 'productor', descripcion: 'Rol con permisos de productor' },
@@ -54,24 +41,24 @@ function Usuarios({ permisos: propsPermisos }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
 
-    const usuariosFiltrados = useMemo(() => {
-        return usuarios.filter(usuario => {
-            const coincideBusqueda = 
-                usuario.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                usuario.rol.toLowerCase().includes(searchTerm.toLowerCase());
-
-            const coincideEstado = 
-                filtroEstado === 'todos' || 
-                usuario.estado.toLowerCase() === filtroEstado.toLowerCase();
-
-            return coincideBusqueda && coincideEstado;
-        });
-    }, [usuarios, searchTerm, filtroEstado]);
-
-    const handleSearch = (term, estado) => {
-        setSearchTerm(term);
-        setFiltroEstado(estado);
+    // Función para obtener usuarios desde el backend
+    const fetchUsuarios = async () => {
+        try {
+            const response = await fetch('http://localhost:3000/usuarios'); // Ajusta la URL según tu backend
+            if (!response.ok) {
+                throw new Error('Error al obtener los usuarios');
+            }
+            const data = await response.json();
+            setUsuarios(data.usuarios); // Usar los datos directamente
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
+
+    // Cargar usuarios al montar el componente
+    useEffect(() => {
+        fetchUsuarios();
+    }, []);
 
     // Handle opening specific modal
     const handleOpenModal = (type) => {
@@ -104,61 +91,49 @@ function Usuarios({ permisos: propsPermisos }) {
         handleOpenModal(activeTab);
     };
 
-    const handleGuardarUsuario = (nuevoUsuario) => {
-        if (selectedItems.usuario) {
-            setUsuarios(prev => 
-                prev.map(u => 
-                    u.id === selectedItems.usuario.id 
-                        ? { ...nuevoUsuario, id: u.id } 
-                        : u
-                )
-            );
-        } else {
-            const usuarioConId = {
-                ...nuevoUsuario,
-                id: Date.now(),
-                estado: 'Activo'
-            };
-            setUsuarios(prev => [...prev, usuarioConId]);
+    const handleGuardarUsuario = async (nuevoUsuario) => {
+        try {
+            const url = selectedItems.usuario
+                ? `http://localhost:3000/usuarios/${selectedItems.usuario.id}` // Usar "id" en lugar de "ID_usuario"
+                : 'http://localhost:3000/usuarios';
+
+            const method = selectedItems.usuario ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(nuevoUsuario),
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al guardar el usuario');
+            }
+
+            // Recargar la lista de usuarios después de guardar
+            fetchUsuarios();
+            handleCloseModal('usuarios');
+        } catch (error) {
+            console.error('Error:', error);
         }
-        handleCloseModal('usuarios');
     };
 
-    const handleGuardarRol = (nuevoRol) => {
-        if (selectedItems.rol) {
-            setRoles(prev => prev.map(r => r.id === selectedItems.rol.id ? nuevoRol : r));
-        } else {
-            setRoles(prev => [...prev, { ...nuevoRol, id: Date.now() }]);
+    const handleEliminarUsuario = async (id) => {
+        try {
+            const response = await fetch(`http://localhost:3000/usuarios/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Error al eliminar el usuario');
+            }
+
+            // Recargar la lista de usuarios después de eliminar
+            fetchUsuarios();
+        } catch (error) {
+            console.error('Error:', error);
         }
-        handleCloseModal('roles');
-    };
-
-    const handleGuardarPermiso = (nuevoPermiso) => {
-        if (selectedItems.permiso) {
-            setPermisos(prev => prev.map(p => p.id === selectedItems.permiso.id ? nuevoPermiso : p));
-        } else {
-            setPermisos(prev => [...prev, { ...nuevoPermiso, id: Date.now() }]);
-        }
-        handleCloseModal('permisos');
-        console.log("Permisos en tabla:", permisos);
-
-    };
-
-    const handleEliminarUsuario = (id) => {
-        setUsuarios(prev => prev.filter(u => u.id !== id));
-    };
-
-    const handleToggleActive = (id) => {
-        setUsuarios(prev => 
-            prev.map(usuario => 
-                usuario.id === id 
-                    ? { 
-                        ...usuario, 
-                        estado: usuario.estado === 'Activo' ? 'Inactivo' : 'Activo' 
-                    } 
-                    : usuario
-            )
-        );
     };
 
     return (
@@ -230,7 +205,10 @@ function Usuarios({ permisos: propsPermisos }) {
                 <div className="bg-white rounded-lg p-4 shadow-lg backdrop-blur-sm">
                     <div className="mb-6">
                         <BarraBusqueda
-                            onSearch={handleSearch}
+                            onSearch={(term, estado) => {
+                                setSearchTerm(term);
+                                setFiltroEstado(estado);
+                            }}
                             placeholder={`Buscar ${activeTab}...`}
                             options={[
                                 { value: 'todos', label: 'Todos' },
@@ -256,13 +234,12 @@ function Usuarios({ permisos: propsPermisos }) {
                     <div className="overflow-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200">
                         {activeTab === 'usuarios' && (
                             <UsuariosTable
-                                usuarios={usuariosFiltrados}
+                                usuarios={usuarios}
                                 onEdit={(usuario) => {
                                     setSelectedItems(prev => ({ ...prev, usuario }));
                                     handleOpenModal('usuarios');
                                 }}
                                 onDelete={handleEliminarUsuario}
-                                onToggleActive={handleToggleActive}
                             />
                         )}
                         {activeTab === 'roles' && (
