@@ -12,7 +12,7 @@ const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
     database: 'sistema-inventario',
-    password: '1234567',
+    password: 'password',
     port: 5432,
 });
 
@@ -25,11 +25,9 @@ pool.connect()
         console.error('❌ Error al conectar a PostgreSQL:', err);
     });
 
-    pool.query('SELECT NOW()')
+pool.query('SELECT NOW()')
     .then(res => console.log('📅 Hora actual en PostgreSQL:', res.rows[0].now))
     .catch(err => console.error('❌ Error en la consulta:', err));
-
-
 
 // Inicializar Express
 const app = express();
@@ -110,6 +108,29 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Nueva ruta para listar usuarios
+app.get('/usuarios', async (req, res) => {
+    try {
+        // Consulta para obtener usuarios con su rol y estado
+        const result = await pool.query(
+            `SELECT 
+                u."ID_usuario",
+                u.email,
+                r.nombre AS rol,
+                u.activo AS estado
+             FROM 
+                public."USUARIO" u
+             JOIN 
+                public."ROL" r ON u."ID_rol" = r."ID_rol"`
+        );
+
+        // Devolver la lista de usuarios
+        res.status(200).json({ usuarios: result.rows });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
 
 // Configuración del servidor
 const PORT = 3000;
