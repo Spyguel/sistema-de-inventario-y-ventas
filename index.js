@@ -7,7 +7,6 @@
     const jwt = require('jsonwebtoken');
     const cors = require('cors');
 
-<<<<<<< HEAD
     // Configuración de la base de datos sin .env
     const pool = new Pool({
         user: 'postgres',
@@ -15,24 +14,6 @@
         database: 'sistema-inventario',
         password: 'password',
         port: 5432,
-=======
-// Configuración de la base de datos sin .env
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'sistema-inventario',
-    password: '1234567',
-    port: 5432,
-});
-
-pool.connect()
-    .then(client => {
-        console.log('✅ Conexión exitosa a PostgreSQL');
-        client.release(); // Liberar el cliente después de la prueba
-    })
-    .catch(err => {
-        console.error('❌ Error al conectar a PostgreSQL:', err);
->>>>>>> 70634a1e0c36c5637990b64a24caebd890167fc3
     });
 
     pool.connect()
