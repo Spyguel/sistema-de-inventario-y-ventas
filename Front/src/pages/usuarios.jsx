@@ -10,79 +10,19 @@ import PermisosForm from '../components/Modals/PermisosForm.jsx';
 import PropTypes from 'prop-types';
 import useSearch from '../hooks/useSearch';
 import useFetchUsuarios from '../hooks/useFetchUsuarios';
+import useRoles from '../hooks/useRoles';
+import usePermisos from '../hooks/usePermisos';
+import useModals from '../hooks/useModals';
+import useSearchOptions from '../hooks/useSearchOptions';
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
     const { usuarios, fetchUsuarios } = useFetchUsuarios();
     const { searchConfig, handleSearch, filterData } = useSearch();
-
-    const [roles, setRoles] = useState([
-        { id: 1, nombre: 'Administrador', descripcion: 'Rol con todos los permisos' },
-        { id: 2, nombre: 'productor', descripcion: 'Rol con permisos de productor' },
-        { id: 3, nombre: 'controlador', descripcion: 'Rol con permisos de controlador' },
-    ]);
-
-    const [permisos, setPermisos] = useState([
-        { id: 1, nombre: 'Crear Usuarios', descripcion: 'Permite crear nuevos usuarios' },
-        { id: 2, nombre: 'Editar Usuarios', descripcion: 'Permite editar usuarios existentes' },
-        { id: 3, nombre: 'Eliminar Usuarios', descripcion: 'Permite eliminar usuarios existentes' },
-        { id: 4, nombre: 'Crear Roles', descripcion: 'Permite crear nuevos roles' },
-    ]);
-
-    const [modals, setModals] = useState({
-        usuarios: false,
-        roles: false,
-        permisos: false,
-    });
-
-    const [selectedItems, setSelectedItems] = useState({
-        usuario: null,
-        rol: null,
-        permiso: null,
-    });
-
-    const searchOptions = {
-        usuarios: [
-            {
-                key: 'estado',
-                label: 'Estado',
-                options: [
-                    { value: 'todos', label: 'Todos' },
-                    { value: 'activo', label: 'Activo' },
-                    { value: 'inactivo', label: 'Inactivo' },
-                ],
-            },
-            {
-                key: 'rol',
-                label: 'Rol',
-                options: roles.map(r => ({ value: r.nombre, label: r.nombre })),
-            },
-        ],
-        roles: [
-            {
-                key: 'tipoRol',
-                label: 'Tipo de Rol',
-                options: [
-                    { value: 'todos', label: 'Todos' },
-                    { value: 'Administrador', label: 'Administrador' },
-                    { value: 'productor', label: 'Productor' },
-                    { value: 'controlador', label: 'Controlador' },
-                ],
-            },
-        ],
-        permisos: [
-            {
-                key: 'categoria',
-                label: 'Categoría',
-                options: [
-                    { value: 'todos', label: 'Todos' },
-                    { value: 'usuarios', label: 'Usuarios' },
-                    { value: 'roles', label: 'Roles' },
-                    { value: 'permisos', label: 'Permisos' },
-                ],
-            },
-        ],
-    };
+    const { roles, handleGuardarRol, handleEliminarRol } = useRoles();
+    const { permisos, handleGuardarPermiso, handleEliminarPermiso } = usePermisos();
+    const { modals, selectedItems, setSelectedItems, handleOpenModal, handleCloseModal, handleAddButton } = useModals();
+    const searchOptions = useSearchOptions(roles);
 
     const getFilteredData = () => {
         const { term, filters } = searchConfig;
@@ -96,35 +36,6 @@ function Usuarios({ permisos: propsPermisos }) {
             default:
                 return [];
         }
-    };
-
-    const handleOpenModal = (type) => {
-        setModals({
-            usuarios: false,
-            roles: false,
-            permisos: false,
-            [type]: true,
-        });
-    };
-
-    const handleCloseModal = (type) => {
-        setModals(prev => ({
-            ...prev,
-            [type]: false,
-        }));
-        setSelectedItems(prev => ({
-            ...prev,
-            [type.slice(0, -1)]: null,
-        }));
-    };
-
-    const handleAddButton = () => {
-        setSelectedItems({
-            usuario: null,
-            rol: null,
-            permiso: null,
-        });
-        handleOpenModal(activeTab);
     };
 
     const handleGuardarUsuario = async (nuevoUsuario) => {
@@ -149,34 +60,6 @@ function Usuarios({ permisos: propsPermisos }) {
 
             fetchUsuarios();
             handleCloseModal('usuarios');
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-    const handleGuardarRol = async (nuevoRol) => {
-        try {
-            if (selectedItems.rol) {
-                setRoles(roles.map(rol => (rol.id === selectedItems.rol.id ? nuevoRol : rol)));
-            } else {
-                setRoles([...roles, { ...nuevoRol, id: roles.length + 1 }]);
-            }
-            handleCloseModal('roles');
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-    const handleGuardarPermiso = async (nuevoPermiso) => {
-        try {
-            if (selectedItems.permiso) {
-                setPermisos(permisos.map(permiso =>
-                    permiso.id === selectedItems.permiso.id ? nuevoPermiso : permiso
-                ));
-            } else {
-                setPermisos([...permisos, { ...nuevoPermiso, id: permisos.length + 1 }]);
-            }
-            handleCloseModal('permisos');
         } catch (error) {
             console.error('Error:', error);
         }
@@ -246,7 +129,7 @@ function Usuarios({ permisos: propsPermisos }) {
 
                 <div className="flex justify-end mb-4">
                     <Button
-                        onClick={handleAddButton}
+                        onClick={() => handleAddButton(activeTab)}
                         variant="success"
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
                     >
@@ -279,7 +162,7 @@ function Usuarios({ permisos: propsPermisos }) {
                                 setSelectedItems(prev => ({ ...prev, rol }));
                                 handleOpenModal('roles');
                             }}
-                            onDelete={(id) => setRoles(prev => prev.filter(r => r.id !== id))}
+                            onDelete={handleEliminarRol}
                         />
                     )}
                     {activeTab === 'permisos' && (
@@ -289,7 +172,7 @@ function Usuarios({ permisos: propsPermisos }) {
                                 setSelectedItems(prev => ({ ...prev, permiso }));
                                 handleOpenModal('permisos');
                             }}
-                            onDelete={(id) => setPermisos(prev => prev.filter(p => p.id !== id))}
+                            onDelete={handleEliminarPermiso}
                         />
                     )}
                 </div>
@@ -312,7 +195,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     onClose={() => handleCloseModal('roles')}
                     title={selectedItems.rol ? 'Editar Rol' : 'Agregar Rol'}
                     rolSeleccionado={selectedItems.rol}
-                    onGuardar={handleGuardarRol}
+                    onGuardar={(nuevoRol) => handleGuardarRol(nuevoRol, selectedItems.rol)}
                 />
             )}
 
@@ -322,7 +205,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     onClose={() => handleCloseModal('permisos')}
                     title={selectedItems.permiso ? 'Editar Permiso' : 'Agregar Permiso'}
                     permisoSeleccionado={selectedItems.permiso}
-                    onGuardar={handleGuardarPermiso}
+                    onGuardar={(nuevoPermiso) => handleGuardarPermiso(nuevoPermiso, selectedItems.permiso)}
                 />
             )}
         </div>
