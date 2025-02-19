@@ -1,10 +1,9 @@
-import  { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Button from '../components/common/button';
 import ProductTable from '../components/Tablas/ProductTable'; 
 import ProductForm from '../components/Modals/ProductForm';
 import BarraBusqueda from '../components/common/BarraBusqueda';
 
-// Datos pre-cargados de productos
 const productosIniciales = [
     {
         id: 1,
@@ -23,7 +22,6 @@ function Productos() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filtroEstado, setFiltroEstado] = useState('todos');
 
-    // Función de búsqueda y filtrado
     const productosFiltrados = useMemo(() => {
         return productos.filter(producto => {
             const coincideBusqueda = 
@@ -42,7 +40,6 @@ function Productos() {
         });
     }, [productos, searchTerm, filtroEstado]);
 
-    // Manejador de búsqueda
     const handleSearch = (term, estado) => {
         setSearchTerm(term);
         setFiltroEstado(estado);
@@ -55,7 +52,6 @@ function Productos() {
 
     const handleGuardarProducto = (nuevoProducto) => {
         if (productoSeleccionado) {
-            // Actualizar producto existente
             setProductos(prevProductos => 
                 prevProductos.map(p => 
                     p.id === productoSeleccionado.id 
@@ -64,10 +60,9 @@ function Productos() {
                 )
             );
         } else {
-            // Crear nuevo producto
             const productoConId = {
                 ...nuevoProducto,
-                id: Date.now(), // Genera un ID temporal
+                id: Date.now(), 
                 activo: true
             };
             setProductos(prevProductos => [...prevProductos, productoConId]);
@@ -82,10 +77,6 @@ function Productos() {
         setProductos(productosActualizados);
     };
 
-    const handleAgregarComponente = (producto) => {
-        console.log('Agregar componente a:', producto.nombre);
-    };
-
     const handleToggleActive = (id) => {
         setProductos(prevProductos => 
             prevProductos.map(producto => 
@@ -97,35 +88,45 @@ function Productos() {
     };
 
     return (
-        <div className="w-full bg-background p-4 flex flex-col mt-5 rounded-lg shadow-md overflow-hidden border-2">
-            <div className="w-full max-h-max flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-text-primary">Gestión de Productos</h2>
-                <Button 
-                    onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }} 
-                    variant="success"
-                >
-                    Agregar Producto
-                </Button>
-            </div>
-            <BarraBusqueda
-                onSearch={handleSearch}
-                placeholder="Buscar productos por nombre..."
-                options={[
-                    { value: 'todos', label: 'Todos' },
-                    { value: 'activos', label: 'Activos' },
-                    { value: 'inactivos', label: 'Inactivos' },
-                    { value: 'PRODUCTO_TERMINADO', label: 'Producto final' },
-                    { value: 'MATERIA_PRIMA', label: 'Materia prima' },
-                ]}
-            />
-            <ProductTable 
-                productos={productosFiltrados} 
-                onEdit={handleEditarProducto}
-                onDelete={handleEliminarProducto}
-                onAddComponent={handleAgregarComponente}
-                onToggleActive={handleToggleActive}
-            />
+        <div className="h-screen ml-10 p-4">
+            <div className="rounded-lg shadow-lg p-6 h-[90%] min-h-[80%] ">
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
+                <p className="text-sm text-gray-500 mb-4">Administra los productos y materias primas</p>
 
+                {/* Botón Agregar */}
+                <div className="flex justify-end mb-4">
+                    <Button 
+                        onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }} 
+                        variant="success"
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+                    >
+                        + Agregar Producto
+                    </Button>
+                </div>
+
+                {/* Barra de Búsqueda */}
+                <BarraBusqueda
+                    onSearch={handleSearch}
+                    placeholder="Buscar productos..."
+                    options={[
+                        { value: 'activos', label: 'Todos' },
+                        { value: 'PRODUCTO_TERMINADO', label: 'Producto final' },
+                        { value: 'MATERIA_PRIMA', label: 'Materia prima' },
+                    ]}
+                />
+
+                {/* Tabla de Productos */}
+                <div className="mt-4">
+                    <ProductTable 
+                        productos={productosFiltrados} 
+                        onEdit={handleEditarProducto}
+                        onDelete={handleEliminarProducto}
+                        onToggleActive={handleToggleActive}
+                    />
+                </div>
+            </div>
+
+            {/* Modal para Agregar/Editar Productos */}
             <ProductForm 
                 isOpen={modalAbierto} 
                 onClose={() => { 
@@ -135,16 +136,7 @@ function Productos() {
                 title={productoSeleccionado ? "Editar Producto" : "Agregar Nuevo Producto"}
                 productoSeleccionado={productoSeleccionado}
                 onGuardar={handleGuardarProducto}
-            >
-                <ProductForm 
-                    productoSeleccionado={productoSeleccionado} 
-                    onGuardar={handleGuardarProducto} 
-                    onCancelar={() => {
-                        setModalAbierto(false);
-                        setProductoSeleccionado(null);
-                    }} 
-                />
-            </ProductForm>
+            />
         </div>
     );
 }

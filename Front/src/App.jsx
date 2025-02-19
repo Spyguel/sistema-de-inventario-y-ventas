@@ -14,40 +14,45 @@ import BarraLateral from './components/layaut/sidebar.jsx';
 
 function App() {
     return (
-        <Routes>
-            {/* Redirigir la ruta raíz ("/") al login */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
+        <div className="relative min-h-screen ">
+            {/* Fondo con blur que ocupa toda la pantalla */}
+            <div className="absolute inset-0 bg-fondo-1 bg-cover bg-center blur-sm z-[-1]"></div>
 
-            {/* Rutas públicas */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Routes>
+                {/* Redirigir la ruta raíz ("/") al login */}
+                <Route path="/" element={<Navigate to="/login" replace />} />
 
-            {/* Rutas protegidas */}
-            <Route element={<ProtectedRoute />}>
-                <Route
-                    element={
-                        <div className="flex h-screen">
-                            <BarraLateral />
-                            <main className="flex-1 overflow-y-auto p-4 bg-gray-100">
-                                <Outlet />
-                            </main>
-                        </div>
-                    }
-                >
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="informes" element={<Informes />} />
-                    <Route path="productos" element={<Productos />} />
-                    <Route path="proveedores" element={<Proveedores />} />
-                    <Route path="clientes" element={<Clientes />} />
-                    <Route path="usuarios" element={<Usuarios />} />
-                    <Route path="configuracion" element={<Configuracion />} />
-                    <Route path="movimientos" element={<Movimientos />} />
+                {/* Rutas públicas */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+
+                {/* Rutas protegidas */}
+                <Route element={<ProtectedRoute />}>
+                    <Route
+                        element={
+                            <div className="flex h-screen z-10">
+                                <BarraLateral />
+                                <main className="flex-1 overflow-y-auto p-4">
+                                    <Outlet />
+                                </main>
+                            </div>
+                        }
+                    >
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="informes" element={<Informes />} />
+                        <Route path="productos" element={<Productos />} />
+                        <Route path="proveedores" element={<Proveedores />} />
+                        <Route path="clientes" element={<Clientes />} />
+                        <Route path="usuarios" element={<Usuarios />} />
+                        <Route path="configuracion" element={<Configuracion />} />
+                        <Route path="movimientos" element={<Movimientos />} />
+                    </Route>
                 </Route>
-            </Route>
 
-            {/* Ruta de redirección por defecto */}
-            <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+                {/* Ruta de redirección por defecto */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+        </div>
     );
 }
 

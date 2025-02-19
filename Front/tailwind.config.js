@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
@@ -6,7 +5,7 @@ export default {
   ],
   theme: {
     extend: {
-      colors:{
+      colors: {
         "principal": "#344966",
         "secundario": "rgba(52,73,102,0.17)",
         "detalles": "#B0C4DE",
@@ -23,7 +22,11 @@ export default {
         "error": "#E27D8B",
         "login-button": "#333",
         "login-button-hover": "#232323",
-    }
+      },
+      backgroundImage: {
+        'fondo-1': "url('./src/assets/fondo.svg')",
+        'fondo-oscuro-1': "url('./src/assets/fondo_ozcuro.svg')",
+      }
     },
   },
   plugins: [],
