@@ -13,7 +13,7 @@ import useFetchUsuarios from '../hooks/useFetchUsuarios';
 import useRoles from '../hooks/useRoles';
 import usePermisos from '../hooks/usePermisos';
 import useModals from '../hooks/useModals';
-import useSearchOptions from '../hooks/useSearchOptions';
+import useSearchOptions from '../hooks/useSearchOption.js';
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
