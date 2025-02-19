@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '../components/common/button.jsx';
 import UsuariosTable from '../components/Tablas/UsuariosTable.jsx';
 import RolesTable from '../components/Tablas/RolesTable.jsx';
@@ -8,10 +8,14 @@ import UsuarioForm from '../components/Modals/UsuarioForm.jsx';
 import RolForm from '../components/Modals/RolForm.jsx';
 import PermisosForm from '../components/Modals/PermisosForm.jsx';
 import PropTypes from 'prop-types';
+import useSearch from '../hooks/useSearch';
+import useFetchUsuarios from '../hooks/useFetchUsuarios';
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
-    const [usuarios, setUsuarios] = useState([]); 
+    const { usuarios, fetchUsuarios } = useFetchUsuarios();
+    const { searchConfig, handleSearch, filterData } = useSearch();
+
     const [roles, setRoles] = useState([
         { id: 1, nombre: 'Administrador', descripcion: 'Rol con todos los permisos' },
         { id: 2, nombre: 'productor', descripcion: 'Rol con permisos de productor' },
@@ -25,82 +29,61 @@ function Usuarios({ permisos: propsPermisos }) {
         { id: 4, nombre: 'Crear Roles', descripcion: 'Permite crear nuevos roles' },
     ]);
 
-    // Separate modal states for each form type
     const [modals, setModals] = useState({
         usuarios: false,
         roles: false,
-        permisos: false
+        permisos: false,
     });
 
     const [selectedItems, setSelectedItems] = useState({
         usuario: null,
         rol: null,
-        permiso: null
-    });
-
-    const [searchConfig, setSearchConfig] = useState({
-        term: '',
-        filters: {}
+        permiso: null,
     });
 
     const searchOptions = {
-        usuarios: [{
-            key: 'estado',
-            label: 'Estado',
-            options: [
-                {value: 'todos', label: 'Todos'},
-                {value: 'activo', label: 'Activo'},
-                {value: 'inactivo', label: 'Inactivo'}
-            ]
-        },
-        {
-            Key: 'rol',
-            label: 'Rol',
-            options: roles.map(r => ({ value: r.nombre, label: r.nombre }))
-        }
-    ],
-    roles: [
-        {
-            key: 'tipoRol',
-            label: 'Tipo de Rol',
-            options: [
-                { value: 'todos', label: 'Todos' },
-                { value: 'Administrador', label: 'Administrador' },
-                { value: 'productor', label: 'Productor' },
-                { value: 'controlador', label: 'Controlador' }//Deberiamos obtenerlo de rol
-            ]
-        }
-    ],
-    permisos: [ //revisar
-        {
-            key: 'categoria',
-            label: 'Categoría',
-            options: [
-                { value: 'todos', label: 'Todos' },
-                { value: 'usuarios', label: 'Usuarios' },
-                { value: 'roles', label: 'Roles' },
-                { value: 'permisos', label: 'Permisos' }
-            ]
-        }
-    ]
-};
-    //Filter data based on search term and filters
-    const filterData = (data, searchTerm, filters) => {
-        return data.filter(item => {
-            // Search term filtering
-            const searchMatch = Object.values(item).some(value =>
-                value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            // Filters matching
-            const filterMatch = Object.entries(filters).every(([key, value]) => {
-                if (!value || value === 'todos') return true;
-                return item[key]?.toString() === value;
-            });
-
-            return searchMatch && filterMatch;
-        });
+        usuarios: [
+            {
+                key: 'estado',
+                label: 'Estado',
+                options: [
+                    { value: 'todos', label: 'Todos' },
+                    { value: 'activo', label: 'Activo' },
+                    { value: 'inactivo', label: 'Inactivo' },
+                ],
+            },
+            {
+                key: 'rol',
+                label: 'Rol',
+                options: roles.map(r => ({ value: r.nombre, label: r.nombre })),
+            },
+        ],
+        roles: [
+            {
+                key: 'tipoRol',
+                label: 'Tipo de Rol',
+                options: [
+                    { value: 'todos', label: 'Todos' },
+                    { value: 'Administrador', label: 'Administrador' },
+                    { value: 'productor', label: 'Productor' },
+                    { value: 'controlador', label: 'Controlador' },
+                ],
+            },
+        ],
+        permisos: [
+            {
+                key: 'categoria',
+                label: 'Categoría',
+                options: [
+                    { value: 'todos', label: 'Todos' },
+                    { value: 'usuarios', label: 'Usuarios' },
+                    { value: 'roles', label: 'Roles' },
+                    { value: 'permisos', label: 'Permisos' },
+                ],
+            },
+        ],
     };
+
     const getFilteredData = () => {
         const { term, filters } = searchConfig;
         switch (activeTab) {
@@ -115,48 +98,23 @@ function Usuarios({ permisos: propsPermisos }) {
         }
     };
 
-    const handleSearch = (term, filters) => {
-        setSearchConfig({ term, filters });
-    };
-
-        // Función para obtener usuarios desde el backend
-    const fetchUsuarios = async () => {
-        try {
-            const response = await fetch('http://localhost:3000/usuarios'); // Ajusta la URL según tu backend
-            if (!response.ok) {
-                throw new Error('Error al obtener los usuarios');
-            }
-            const data = await response.json();
-            setUsuarios(data.usuarios); // Usar los datos directamente
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-
-    // Cargar usuarios al montar el componente
-    useEffect(() => {
-        fetchUsuarios();
-    }, []);
-
-    // Handle opening specific modal
     const handleOpenModal = (type) => {
         setModals({
             usuarios: false,
             roles: false,
             permisos: false,
-            [type]: true
+            [type]: true,
         });
     };
 
-    // Handle closing specific modal
     const handleCloseModal = (type) => {
         setModals(prev => ({
             ...prev,
-            [type]: false
+            [type]: false,
         }));
         setSelectedItems(prev => ({
             ...prev,
-            [type.slice(0, -1)]: null
+            [type.slice(0, -1)]: null,
         }));
     };
 
@@ -164,7 +122,7 @@ function Usuarios({ permisos: propsPermisos }) {
         setSelectedItems({
             usuario: null,
             rol: null,
-            permiso: null
+            permiso: null,
         });
         handleOpenModal(activeTab);
     };
@@ -172,7 +130,7 @@ function Usuarios({ permisos: propsPermisos }) {
     const handleGuardarUsuario = async (nuevoUsuario) => {
         try {
             const url = selectedItems.usuario
-                ? `http://localhost:3000/usuarios/${selectedItems.usuario.id}` // Usar "id" en lugar de "ID_usuario"
+                ? `http://localhost:3000/usuarios/${selectedItems.usuario.id}`
                 : 'http://localhost:3000/usuarios';
 
             const method = selectedItems.usuario ? 'PUT' : 'POST';
@@ -189,7 +147,6 @@ function Usuarios({ permisos: propsPermisos }) {
                 throw new Error('Error al guardar el usuario');
             }
 
-            // Recargar la lista de usuarios después de guardar
             fetchUsuarios();
             handleCloseModal('usuarios');
         } catch (error) {
@@ -199,9 +156,8 @@ function Usuarios({ permisos: propsPermisos }) {
 
     const handleGuardarRol = async (nuevoRol) => {
         try {
-            // Update roles state with the new role
             if (selectedItems.rol) {
-                setRoles(roles.map(rol => rol.id === selectedItems.rol.id ? nuevoRol : rol));
+                setRoles(roles.map(rol => (rol.id === selectedItems.rol.id ? nuevoRol : rol)));
             } else {
                 setRoles([...roles, { ...nuevoRol, id: roles.length + 1 }]);
             }
@@ -214,7 +170,7 @@ function Usuarios({ permisos: propsPermisos }) {
     const handleGuardarPermiso = async (nuevoPermiso) => {
         try {
             if (selectedItems.permiso) {
-                setPermisos(permisos.map(permiso => 
+                setPermisos(permisos.map(permiso =>
                     permiso.id === selectedItems.permiso.id ? nuevoPermiso : permiso
                 ));
             } else {
@@ -236,7 +192,6 @@ function Usuarios({ permisos: propsPermisos }) {
                 throw new Error('Error al eliminar el usuario');
             }
 
-            // Recargar la lista de usuarios después de eliminar
             fetchUsuarios();
         } catch (error) {
             console.error('Error:', error);
@@ -252,14 +207,14 @@ function Usuarios({ permisos: propsPermisos }) {
                     {activeTab === 'roles' && 'Gestiona los roles y sus permisos asociados'}
                     {activeTab === 'permisos' && 'Configura los permisos disponibles en el sistema'}
                 </p>
-    
-                <div className="flex space-x-4 mb-6 justify-end ">
+
+                <div className="flex space-x-4 mb-6 justify-end">
                     <Button
                         onClick={() => setActiveTab('usuarios')}
                         variant={activeTab === 'usuarios' ? 'primary' : 'default'}
                         className={`px-4 py-2 rounded-lg transition ${
-                            activeTab === 'usuarios' 
-                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600' 
+                            activeTab === 'usuarios'
+                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
@@ -269,8 +224,8 @@ function Usuarios({ permisos: propsPermisos }) {
                         onClick={() => setActiveTab('roles')}
                         variant={activeTab === 'roles' ? 'primary' : 'default'}
                         className={`px-4 py-2 rounded-lg transition ${
-                            activeTab === 'roles' 
-                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600' 
+                            activeTab === 'roles'
+                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
@@ -280,18 +235,17 @@ function Usuarios({ permisos: propsPermisos }) {
                         onClick={() => setActiveTab('permisos')}
                         variant={activeTab === 'permisos' ? 'primary' : 'default'}
                         className={`px-4 py-2 rounded-lg transition ${
-                            activeTab === 'permisos' 
-                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600' 
+                            activeTab === 'permisos'
+                                ? 'bg-blue-500 text-white shadow hover:bg-blue-600'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                     >
                         Permisos
                     </Button>
                 </div>
-    
-                {/* Botón Agregar */}
+
                 <div className="flex justify-end mb-4">
-                    <Button 
+                    <Button
                         onClick={handleAddButton}
                         variant="success"
                         className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
@@ -299,20 +253,18 @@ function Usuarios({ permisos: propsPermisos }) {
                         + Agregar {activeTab.slice(0, -1)}
                     </Button>
                 </div>
-    
-                {/* Barra de Búsqueda */}
+
                 <BarraBusqueda
                     onSearch={handleSearch}
                     placeholder={`Buscar ${activeTab}...`}
                     options={searchOptions[activeTab] || []}
                     initialFilters={searchConfig.filters}
                 />
-    
-                {/* Tablas */}
+
                 <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
                     {activeTab === 'usuarios' && (
                         <UsuariosTable
-                            usuarios={getFilteredData}
+                            usuarios={getFilteredData()}
                             onEdit={(usuario) => {
                                 setSelectedItems(prev => ({ ...prev, usuario }));
                                 handleOpenModal('usuarios');
@@ -321,8 +273,8 @@ function Usuarios({ permisos: propsPermisos }) {
                         />
                     )}
                     {activeTab === 'roles' && (
-                        <RolesTable 
-                            roles={getFilteredData}
+                        <RolesTable
+                            roles={getFilteredData()}
                             onEdit={(rol) => {
                                 setSelectedItems(prev => ({ ...prev, rol }));
                                 handleOpenModal('roles');
@@ -331,8 +283,8 @@ function Usuarios({ permisos: propsPermisos }) {
                         />
                     )}
                     {activeTab === 'permisos' && (
-                        <PermisosTable 
-                            permisos={getFilteredData}
+                        <PermisosTable
+                            permisos={getFilteredData()}
                             onEdit={(permiso) => {
                                 setSelectedItems(prev => ({ ...prev, permiso }));
                                 handleOpenModal('permisos');
@@ -342,8 +294,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     )}
                 </div>
             </div>
-    
-            {/* Modals */}
+
             {modals.usuarios && (
                 <UsuarioForm
                     isOpen={modals.usuarios}
@@ -354,7 +305,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     permisos={propsPermisos}
                 />
             )}
-    
+
             {modals.roles && (
                 <RolForm
                     isOpen={modals.roles}
@@ -364,7 +315,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     onGuardar={handleGuardarRol}
                 />
             )}
-    
+
             {modals.permisos && (
                 <PermisosForm
                     isOpen={modals.permisos}
@@ -382,13 +333,13 @@ Usuarios.propTypes = {
     permisos: PropTypes.arrayOf(
         PropTypes.shape({
             id: PropTypes.number.isRequired,
-            nombre: PropTypes.string.isRequired
+            nombre: PropTypes.string.isRequired,
         })
-    ).isRequired
+    ).isRequired,
 };
 
 Usuarios.defaultProps = {
-    permisos: []
+    permisos: [],
 };
 
 export default Usuarios;
