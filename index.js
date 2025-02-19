@@ -136,20 +136,10 @@
     // Ruta para consultar la tabla item con filtros
     app.get('/items', async (req, res) => {
         try {
-            const { tipo } = req.query; // Obtener el parámetro "tipo" de la URL
-
-            let filtroTipo;
-            if (tipo === 'materia-prima') {
-                filtroTipo = 'Materia Prima';
-            } else if (tipo === 'producto-terminado') {
-                filtroTipo = 'Producto Terminado';
-            } else {
-                // Si no se especifica el tipo, devolver todos los items
-                filtroTipo = null;
-            }
-
+            const { tipo } = req.query;
+    
             // Consulta SQL base
-            let query = `
+            const query = `
                 SELECT 
                     id_item, 
                     unidad_medida, 
@@ -161,20 +151,21 @@
                     activo
                 FROM 
                     public.item
+                ${tipo ? "WHERE tipo_item = $1" : ""}
             `;
-
-            // Aplicar filtro si se especificó un tipo
-            if (filtroTipo) {
-                query += ` WHERE tipo_item = $1`;
-            }
-
+    
             // Ejecutar la consulta
-            const result = filtroTipo 
-                ? await pool.query(query, [filtroTipo]) 
-                : await pool.query(query);
-
-            // Devolver los resultados en formato JSON
-            res.status(200).json({ items: result.rows });
+            const result = await pool.query(query, tipo ? [tipo === 'materia-prima' ? 'Materia Prima' : 'Producto Terminado'] : []);
+    
+            // Formatear la fecha y el estado en los resultados
+            const items = result.rows.map(item => ({
+                ...item,
+                fecha_creacion: new Date(item.fecha_creacion).toLocaleDateString('es-ES'), // Formato dd/mm/yyyy
+                activo: item.activo ? 'Activo' : 'No activo' // Formatear el estado
+            }));
+    
+            // Devolver los resultados
+            res.status(200).json({ items });
         } catch (error) {
             console.error('Error al ejecutar la consulta:', error);
             res.status(500).json({ error: 'Error interno del servidor' });
