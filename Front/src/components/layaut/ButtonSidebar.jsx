@@ -18,7 +18,7 @@ export const ButtonSidebar = ({ item, open }) => {
 
   return (
     <li
-      className={`flex rounded-md p-2 cursor-pointer hover:bg-accent-soft-blue text-white text-sm items-center gap-x-4 ${item.gap ? 'mt-9' : 'mt-2'}`}
+      className={`flex rounded-md p-2 cursor-pointer hover:bg-accent-soft-blue text-text-primary text-sm items-center gap-x-4 ${item.gap ? 'mt-9' : 'mt-2'}`}
       onClick={handleClick}
     >
       <div className="flex items-center gap-x-4 w-full">

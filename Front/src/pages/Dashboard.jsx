@@ -2,70 +2,76 @@ import { CubeIcon, ChartBarIcon, ServerIcon, UserIcon, CogIcon } from '@heroicon
 
 function Dashboard() {
   const estadisticas = [
-    { titulo: "Inventario total", valor: "123,456", cambio: "+12.5%", positivo: true },
-    { titulo: "Productos Bajos", valor: "23", cambio: "-5%", positivo: false },
-    { titulo: "Movimientos Hoy", valor: "89", cambio: "+8%", positivo: true }
+    { titulo: "Inventario", valor: "123,456", cambio: "+12.5%", positivo: true },
+    { titulo: "P. Bajos", valor: "23", cambio: "-5%", positivo: false },
+    { titulo: "Movimientos", valor: "89", cambio: "+8%", positivo: true }
   ];
 
   const acciones = [
-    { titulo: "Nuevo Producto", descripcion: "Añadir item al inventario", icono: <CubeIcon className="w-6 h-6 text-blue-500" /> },
-    { titulo: "Registrar Entrada", descripcion: "Entrada de mercancía", icono: <ChartBarIcon className="w-6 h-6 text-green-500" /> },
-    { titulo: "Registrar Salida", descripcion: "Salida de mercancía", icono: <ServerIcon className="w-6 h-6 text-red-500" /> }
+    { titulo: "Nuevo Producto", descripcion: "Añadir item", icono: CubeIcon, color: "text-blue-500" },
+    { titulo: "Entrada", descripcion: "Ingreso", icono: ChartBarIcon, color: "text-green-500" },
+    { titulo: "Salida", descripcion: "Egreso", icono: ServerIcon, color: "text-red-500" }
   ];
 
   const modulos = [
-    { titulo: "Gestión de Inventario", descripcion: "Control preciso de stock, entradas y salidas de productos.", icono: <CubeIcon className="w-10 h-10 text-gray-600" /> },
-    { titulo: "Reportes y Análisis", descripcion: "Informes detallados de consumo, existencias y tendencias.", icono: <ChartBarIcon className="w-10 h-10 text-gray-600" /> },
-    { titulo: "Registro de Movimientos", descripcion: "Seguimiento completo de todas las operaciones de almacén.", icono: <ServerIcon className="w-10 h-10 text-gray-600" /> },
-    { titulo: "Gestión de Usuarios", descripcion: "Control de acceso y permisos para cada usuario.", icono: <UserIcon className="w-10 h-10 text-gray-600" /> },
-    { titulo: "Configuración", descripcion: "Ajustes del sistema y personalización.", icono: <CogIcon className="w-10 h-10 text-gray-600" /> }
+    { titulo: "Inventario", descripcion: "Control de stock", icono: CubeIcon },
+    { titulo: "Reportes", descripcion: "Análisis y estadísticas", icono: ChartBarIcon },
+    { titulo: "Movimientos", descripcion: "Registro de operaciones", icono: ServerIcon },
+    { titulo: "Usuarios", descripcion: "Control de acceso", icono: UserIcon },
+    { titulo: "Config", descripcion: "Ajustes", icono: CogIcon }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-semibold mb-4">Panel de Inicio</h1>
-        <p className="text-sm text-gray-500">28/1/2025, 17:16:52</p>
+    <div className="h-screen ml-10 p-4">
+      <div className="rounded-lg shadow-lg p-6 h-[90%] min-h-[80%]">
+        <h1 className="text-2xl font-semibold">Panel de Inicio</h1>
+        <p className="text-sm text-gray-500 mb-4">28/1/2025</p>
 
-        {/* Estadísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-          {estadisticas.map((item, index) => (
-            <div key={index} className="p-4 bg-gray-50 rounded-lg shadow-md">
-              <h2 className="text-lg font-medium">{item.titulo}</h2>
-              <p className="text-2xl font-bold">{item.valor}</p>
-              <span className={`text-sm ${item.positivo ? 'text-green-600' : 'text-red-600'}`}>{item.cambio}</span>
+        <div className="grid gap-6 h-[calc(100%-5rem)]">
+          {/* Estadísticas */}
+          <div>
+            <div className="grid grid-cols-3 gap-4">
+              {estadisticas.map((item, index) => (
+                <div key={index} className="p-4 bg-gray-50 rounded-lg text-center shadow">
+                  <h2 className="text-md font-medium">{item.titulo}</h2>
+                  <p className="text-xl font-bold mt-1">{item.valor}</p>
+                  <span className={`text-sm ${item.positivo ? 'text-green-600' : 'text-red-600'}`}>
+                    {item.cambio}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Acciones Rápidas */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-          {acciones.map((accion, index) => (
-            <button 
-              key={index} 
-              className="p-4 bg-white rounded-lg shadow hover:shadow-md flex flex-col items-center transition-transform transform hover:scale-105"
-              onClick={() => alert(`${accion.titulo} clickeado`)}
-            >
-              {accion.icono}
-              <h3 className="text-md font-medium mt-2">{accion.titulo}</h3>
-              <p className="text-xs text-gray-500">{accion.descripcion}</p>
-            </button>
-          ))}
-        </div>
+          {/* Acciones */}
+          <div>
+            <div className="grid grid-cols-3 gap-4">
+              {acciones.map((accion, index) => (
+                <button key={index} 
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg shadow hover:shadow-md"
+                  >
+                  <accion.icono className={`w-8 h-8 ${accion.color}`} />
+                  <h3 className="text-md mt-2 font-medium">{accion.titulo}</h3>
+                  <p className="text-sm text-gray-500">{accion.descripcion}</p>
+                </button>
+              ))}
+            </div>
+          </div>
 
-        {/* Módulos */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-          {modulos.map((modulo, index) => (
-            <button 
-              key={index} 
-              className="p-4 bg-gray-50 rounded-lg shadow-md flex flex-col items-center text-center transition-transform transform hover:scale-105"
-              onClick={() => alert(`${modulo.titulo} seleccionado`)}
-            >
-              {modulo.icono}
-              <h3 className="text-md font-medium mt-2">{modulo.titulo}</h3>
-              <p className="text-xs text-gray-500">{modulo.descripcion}</p>
-            </button>
-          ))}
+          {/* Módulos */}
+          <div>
+            <div className="grid grid-cols-5 gap-4">
+              {modulos.map((modulo, index) => (
+                <button key={index} 
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg shadow-md hover:bg-gray-100"
+                  >
+                  <modulo.icono className="w-10 h-10 text-gray-600" />
+                  <h3 className="text-md mt-2 font-medium">{modulo.titulo}</h3>
+                  <p className="text-sm text-gray-500">{modulo.descripcion}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
