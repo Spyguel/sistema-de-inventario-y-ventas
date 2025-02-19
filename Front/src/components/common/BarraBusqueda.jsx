@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { MagnifyingGlassIcon, XMarkIcon, FunnelIcon } from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import SelectInput from './common/Forms/Imputs/SelectInput';
 
 const BarraBusqueda = ({ 
@@ -11,7 +11,6 @@ const BarraBusqueda = ({
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeFilters, setActiveFilters] = useState(initialFilters);
-    const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
         handleSearch();
@@ -68,42 +67,7 @@ const BarraBusqueda = ({
                         </button>
                     )}
                 </div>
-
-                {/* Filter Toggle Button */}
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`p-2 rounded-lg border shadow-sm hover:bg-gray-50 ${
-                        showFilters ? 'bg-blue-50 border-blue-200' : ''
-                    }`}
-                >
-                    <div className="flex items-center gap-1">
-                        <FunnelIcon className="h-5 w-5 text-gray-600" />
-                        {getActiveFiltersCount() > 0 && (
-                            <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
-                                {getActiveFiltersCount()}
-                            </span>
-                        )}
-                    </div>
-                </button>
             </div>
-
-            {/* Filters Panel */}
-            {showFilters && (
-                <div className="p-4 rounded-lg border shadow-sm space-y-4">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {options.map((group, index) => (
-                            <SelectInput
-                                key={index}
-                                label={group.label}
-                                name={group.key}
-                                value={activeFilters[group.key] || ''}
-                                onChange={(e) => handleFilterChange(group.key, e.target.value)}
-                                options={group.options}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
