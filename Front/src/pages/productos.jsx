@@ -88,8 +88,8 @@ function Productos() {
     };
 
     return (
-        <div className="h-screen ml-10 p-4">
-            <div className="rounded-lg shadow-lg p-6 h-[90%] min-h-[80%] ">
+        <div className="h-[100%] ml-10 p-4">
+            <div className="rounded-lg shadow-lg p-6 h-[95%]">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
                 <p className="text-sm text-gray-500 mb-4">Administra los productos y materias primas</p>
 

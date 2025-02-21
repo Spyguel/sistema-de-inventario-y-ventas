@@ -40,6 +40,17 @@ const useSearchOptions = (roles) => {
                 ],
             },
         ],
+        clientes: [
+            { value: 'Nombre', label: 'Nombre' },
+            { value: 'tipo_contacto', label: 'Tipo' },
+            { value: 'Mail', label: 'Email' },
+            { value: 'Teléfono', label: 'Teléfono' },
+            { value: 'Activo', label: 'Estado' },
+        ],
+        contactoitems: [
+            { value: 'ID_contacto', label: 'ID Cliente' },
+            { value: 'ID_item', label: 'ID Item' },
+        ],
     };
 
     return searchOptions;

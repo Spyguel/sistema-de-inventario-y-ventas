@@ -1,0 +1,66 @@
+// controllers/authController.js
+const pool = require('../config/db');
+const bcrypt = require('bcrypt');
+const Joi = require('joi');
+const jwt = require('jsonwebtoken');
+
+// Esquema de validación con Joi
+const userSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).required(),
+    roleId: Joi.number().integer().required()
+});
+
+// Función para generar el token JWT
+const generateToken = (user) => {
+    return jwt.sign({ id: user.id, email: user.email, roleId: user.id_rol }, 'clave_secreta', { expiresIn: '1h' });
+};
+
+// Registro de usuarios
+exports.register = async (req, res) => {
+    try {
+        const { error } = userSchema.validate(req.body);
+        if (error) return res.status(400).json({ error: error.details[0].message });
+
+        const { email, password, roleId } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const result = await pool.query(
+            'INSERT INTO public."USUARIO" ("ID_rol", email, "contraseña", activo) VALUES ($1, $2, $3, $4) RETURNING *',
+            [roleId, email, hashedPassword, true]
+        );
+
+        const token = generateToken(result.rows[0]);
+        res.status(201).json({ message: 'Usuario registrado', user: result.rows[0], token });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+// Login de usuarios
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const result = await pool.query(
+            `SELECT u."ID_usuario", u."ID_rol", u.email, u."contraseña", u.activo, r."nombre" AS rol_nombre
+             FROM public."USUARIO" u
+             JOIN public."ROL" r ON u."ID_rol" = r."ID_rol"
+             WHERE u.email = $1`, 
+            [email]
+        );
+
+        if (result.rows.length === 0) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+        const user = result.rows[0];
+        const isValidPassword = await bcrypt.compare(password, user.contraseña);
+
+        if (!isValidPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
+
+        const token = generateToken(user);
+        res.json({ message: 'Autenticación exitosa', token, rol: user.rol_nombre });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};

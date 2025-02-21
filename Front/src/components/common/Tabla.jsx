@@ -6,9 +6,9 @@ const Tabla = ({ headers, data, onSort, renderActions }) => {
     <div className="flex-grow overflow-hidden rounded-lg shadow-lg m-3 ">
       <div className="h-full overflow-hidden">
         <div className="overflow-auto max-h-[60vh]">
-          <table className="w-full bg-background_2 rounded-lg" aria-label="Tabla General">
+          <table className="w-full bg-background rounded-lg" aria-label="Tabla General">
             <thead className="sticky top-0 z-10">
-              <tr className="bg-principal  text-white">
+              <tr className="bg-tableHeader  text-white">
                 {headers.map((header, index) => (
                   <th 
                     key={index} 

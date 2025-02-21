@@ -15,6 +15,7 @@ export default {
         "accent-soft-blue": "#A5C9E6", 
         "accent-muted-green": "#B8E0D2",
         "accent-subtle-lavender": "#D8D2E1",
+        "tableHeader": "#2D3E60",
         "text-primary": "#2C3E50",
         "text-secondary": "#617487",
         "success": "#7DB9B3",
