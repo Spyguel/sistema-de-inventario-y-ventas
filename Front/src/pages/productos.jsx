@@ -20,29 +20,20 @@ function Productos() {
     const [modalAbierto, setModalAbierto] = useState(false);
     const [productoSeleccionado, setProductoSeleccionado] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filtroEstado, setFiltroEstado] = useState('todos');
 
     const productosFiltrados = useMemo(() => {
         return productos.filter(producto => {
-            const coincideBusqueda = 
+            return (
                 producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 producto.tipoItem.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 producto.unidadMedida.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                producto.id.toString().includes(searchTerm);
-
-            const coincideEstado = 
-                filtroEstado === 'todos' || 
-                filtroEstado === 'activos' && producto.activo ||
-                filtroEstado === 'inactivos' && !producto.activo ||
-                producto.tipoItem === filtroEstado;
-
-            return coincideBusqueda && coincideEstado;
+                producto.id.toString().includes(searchTerm)
+            );
         });
-    }, [productos, searchTerm, filtroEstado]);
+    }, [productos, searchTerm]);
 
-    const handleSearch = (term, estado) => {
+    const handleSearch = (term) => {
         setSearchTerm(term);
-        setFiltroEstado(estado);
     };
 
     const handleEditarProducto = (producto) => {
@@ -108,15 +99,10 @@ function Productos() {
                 <BarraBusqueda
                     onSearch={handleSearch}
                     placeholder="Buscar productos..."
-                    options={[
-                        { value: 'activos', label: 'Todos' },
-                        { value: 'PRODUCTO_TERMINADO', label: 'Producto final' },
-                        { value: 'MATERIA_PRIMA', label: 'Materia prima' },
-                    ]}
                 />
 
                 {/* Tabla de Productos */}
-                <div className="mt-4">
+                <div className="mt-4 flex-1 overflow-auto">
                     <ProductTable 
                         productos={productosFiltrados} 
                         onEdit={handleEditarProducto}
