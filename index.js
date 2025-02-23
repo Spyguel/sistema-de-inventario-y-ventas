@@ -311,6 +311,46 @@ app.get('/contacto_item', async (req, res) => {
             res.status(500).json({ error: 'Error interno del servidor' });
         }
     });
+    
+    // Nueva ruta para consultar la tabla item con filtros
+    // Ruta para consultar la tabla item con filtros
+    app.get('/items', async (req, res) => {
+        try {
+            const { tipo } = req.query;
+    
+            // Consulta SQL base
+            const query = `
+                SELECT 
+                    id_item, 
+                    unidad_medida, 
+                    nombre, 
+                    tipo_item, 
+                    cantidad_actual, 
+                    cantidad_minima, 
+                    fecha_creacion, 
+                    activo
+                FROM 
+                    public.item
+                ${tipo ? "WHERE tipo_item = $1" : ""}
+            `;
+    
+            // Ejecutar la consulta
+            const result = await pool.query(query, tipo ? [tipo === 'materia-prima' ? 'Materia Prima' : 'Producto Terminado'] : []);
+    
+            // Formatear la fecha y el estado en los resultados
+            const items = result.rows.map(item => ({
+                ...item,
+                fecha_creacion: new Date(item.fecha_creacion).toLocaleDateString('es-ES'), // Formato dd/mm/yyyy
+                activo: item.activo ? 'Activo' : 'No activo' // Formatear el estado
+            }));
+    
+            // Devolver los resultados
+            res.status(200).json({ items });
+        } catch (error) {
+            console.error('Error al ejecutar la consulta:', error);
+            res.status(500).json({ error: 'Error interno del servidor' });
+        }
+    });
 
 // Configuración del servidor
 const PORT = 3000;
