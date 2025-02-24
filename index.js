@@ -351,8 +351,102 @@ app.get('/contacto_item', async (req, res) => {
             res.status(500).json({ error: 'Error interno del servidor' });
         }
     });
+    // ----------------------
+// Rutas para la entidad ROL
+// ----------------------
 
-// Configuración del servidor
+// Obtener todos los roles
+app.get('/roles', async (req, res) => {
+    try {
+      // Se asume que la tabla se llama "ROL" y está en el esquema public
+      const result = await pool.query('SELECT * FROM public."ROL"');
+      res.status(200).json({ roles: result.rows });
+    } catch (error) {
+      console.error('Error al obtener roles:', error);
+      res.status(500).json({ error: 'Error al obtener roles' });
+    }
+  });
+  
+  // Crear un nuevo rol
+  app.post('/roles', async (req, res) => {
+    try {
+      // Se esperan los campos: ID_rol_permiso, Nombre y Descripción
+      const { ID_rol_permiso, Nombre, Descripción } = req.body;
+      
+      // Puedes agregar validaciones aquí según necesites
+      const result = await pool.query(
+        'INSERT INTO public."ROL" ("ID_rol_permiso", "Nombre", "Descripción") VALUES ($1, $2, $3) RETURNING *',
+        [ID_rol_permiso, Nombre, Descripción]
+      );
+      res.status(201).json({ message: 'Rol creado correctamente', rol: result.rows[0] });
+    } catch (error) {
+      console.error('Error al crear rol:', error);
+      res.status(500).json({ error: 'Error al crear rol' });
+    }
+  });
+  
+  // Actualizar un rol existente
+  app.put('/roles/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { ID_rol_permiso, Nombre, Descripción } = req.body;
+      const result = await pool.query(
+        'UPDATE public."ROL" SET "ID_rol_permiso" = $1, "Nombre" = $2, "Descripción" = $3 WHERE "ID_rol" = $4 RETURNING *',
+        [ID_rol_permiso, Nombre, Descripción, id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Rol no encontrado' });
+      }
+      res.status(200).json({ message: 'Rol actualizado correctamente', rol: result.rows[0] });
+    } catch (error) {
+      console.error('Error al actualizar rol:', error);
+      res.status(500).json({ error: 'Error al actualizar rol' });
+    }
+  });
+  
+  // Eliminar un rol
+  app.delete('/roles/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await pool.query(
+        'DELETE FROM public."ROL" WHERE "ID_rol" = $1 RETURNING *',
+        [id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Rol no encontrado' });
+      }
+      res.status(200).json({ message: 'Rol eliminado correctamente', rol: result.rows[0] });
+    } catch (error) {
+      console.error('Error al eliminar rol:', error);
+      res.status(500).json({ error: 'Error al eliminar rol' });
+    }
+  });
+  
+  // Agregar un permiso a un rol
+  app.post('/roles/:id/permisos', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { permiso } = req.body;
+      // Se asume que el permiso se almacena en el campo "ID_rol_permiso"
+      // Nota: Si un rol debe tener varios permisos, normalmente se usa una tabla intermedia.
+      const result = await pool.query(
+        'UPDATE public."ROL" SET "ID_rol_permiso" = $1 WHERE "ID_rol" = $2 RETURNING *',
+        [permiso, id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Rol no encontrado' });
+      }
+      res.status(200).json({ message: 'Permiso agregado correctamente al rol', rol: result.rows[0] });
+    } catch (error) {
+      console.error('Error al agregar permiso al rol:', error);
+      res.status(500).json({ error: 'Error al agregar permiso al rol' });
+    }
+  });
+
+
+
+
+    // Configuración del servidor
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);

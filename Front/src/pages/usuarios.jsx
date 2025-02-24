@@ -1,25 +1,34 @@
 import { useState } from 'react';
+//DISEÑO
 import Button from '../components/common/button.jsx';
 import UsuariosTable from '../components/Tablas/UsuariosTable.jsx';
 import RolesTable from '../components/Tablas/RolesTable.jsx';
 import PermisosTable from '../components/Tablas/PermisosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
+//FORMULARIO
 import UsuarioForm from '../components/Modals/UsuarioForm.jsx';
 import RolForm from '../components/Modals/RolForm.jsx';
-import PermisosForm from '../components/Modals/PermisosForm.jsx';
+import PermisosForm from '../components/Modals/PermisosForm.jsx'
+;
 import PropTypes from 'prop-types';
+//HOOKS Y FETCH
 import useSearch from '../hooks/useSearch';
-import useFetchUsuarios from '../hooks/useFetchUsuarios';
-import useRoles from '../hooks/useRoles';
-import usePermisos from '../hooks/usePermisos';
-import useModals from '../hooks/useModals';
 import useSearchOptions from '../hooks/useSearchOption.js';
+
+import useFetchUsuarios from '../hooks/useFetchUsuarios';
+
+import useRoles from '../hooks/useRoles';
+
+import usePermisos from '../hooks/usePermisos';
+
+import useModals from '../hooks/useModals';
+
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
     const { usuarios, fetchUsuarios } = useFetchUsuarios();
     const { searchConfig, handleSearch, filterData } = useSearch();
-    const { roles, handleGuardarRol, handleEliminarRol } = useRoles();
+    const { roles, handleGuardarRol, handleEliminarRol, handleAddPermiso } = useRoles();
     const { permisos, handleGuardarPermiso, handleEliminarPermiso } = usePermisos();
     const { modals, selectedItems, setSelectedItems, handleOpenModal, handleCloseModal, handleAddButton } = useModals();
     const searchOptions = useSearchOptions(roles);
@@ -162,6 +171,7 @@ function Usuarios({ permisos: propsPermisos }) {
                                 setSelectedItems(prev => ({ ...prev, rol }));
                                 handleOpenModal('roles');
                             }}
+                            onPermiso={handleAddPermiso}
                             onDelete={handleEliminarRol}
                         />
                     )}
