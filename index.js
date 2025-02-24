@@ -446,6 +446,49 @@ app.get('/roles', async (req, res) => {
 
 
 
+    app.put('/usuarios/:id', async (req, res) => {
+        try {
+          const userId = parseInt(req.params.id);
+      
+          // Validar que el ID sea un número válido
+          if (isNaN(userId)) {
+            return res.status(400).json({ error: 'ID de usuario no válido' });
+          }
+      
+          const { email, password, roleId } = req.body;
+      
+          // Hashear la nueva contraseña si se proporciona
+          const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
+      
+          // Consulta SQL para actualizar el usuario
+          const query = `
+            UPDATE public."USUARIO"
+            SET 
+              email = COALESCE($1, email),
+              "contraseña" = COALESCE($2, "contraseña"),
+              "ID_rol" = COALESCE($3, "ID_rol")
+            WHERE "ID_usuario" = $4
+            RETURNING *;
+          `;
+      
+          const result = await pool.query(query, [email, hashedPassword, roleId, userId]);
+      
+          if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+          }
+      
+          // Devolver el usuario actualizado
+          const updatedUser = result.rows[0];
+          res.status(200).json({ 
+            message: 'Usuario actualizado correctamente', 
+            user: updatedUser 
+          });
+        } catch (error) {
+          console.error('❌ Error al actualizar usuario:', error);
+          res.status(500).json({ error: 'Error interno del servidor' });
+        }
+      });
+
     // Configuración del servidor
 const PORT = 3000;
 app.listen(PORT, () => {
