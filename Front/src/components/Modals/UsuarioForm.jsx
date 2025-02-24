@@ -3,43 +3,64 @@ import FormModal from '../common/common/Forms/FormModal';
 import Form from '../common/common/Forms/Form';
 import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-const UsuarioForm = ({ isOpen, onClose, title }) => {
-  const rolEmpleado = 2; // Valor fijo para "Empleado"
-
+const UsuarioForm = ({ isOpen, onClose, title, usuarioSeleccionado, onGuardar }) => {
   // Estados para los inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [roleId, setRoleId] = useState(2); // Valor por defecto para "Empleado"
   const [message, setMessage] = useState({ text: '', type: '' });
 
-  // Función para enviar los datos al backend
-  const handleFormSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          roleId: rolEmpleado, // Siempre "Empleado"
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al registrar usuario');
-      }
-
-      setMessage({ text: 'Usuario registrado con éxito', type: 'success' });
-
-      // Limpiar el formulario
+  // Cargar los datos del usuario seleccionado al abrir el modal
+  useEffect(() => {
+    if (usuarioSeleccionado) {
+      setEmail(usuarioSeleccionado.email);
+      setRoleId(usuarioSeleccionado.ID_rol);
+      setPassword(''); // No cargamos la contraseña por seguridad
+    } else {
+      // Si no hay usuario seleccionado, reiniciamos los campos
       setEmail('');
       setPassword('');
+      setRoleId(2);
+    }
+  }, [usuarioSeleccionado]);
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+  
+    try {
+      // Crear el objeto con los datos del usuario
+      const usuarioData = {};
+  
+      // Solo incluir el email si ha cambiado
+      if (email !== usuarioSeleccionado?.email) {
+        usuarioData.email = email;
+      }
+  
+      // Solo incluir la contraseña si se ha proporcionado
+      if (password) {
+        usuarioData.password = password;
+      }
+  
+      // Solo incluir el rol si ha cambiado
+      if (roleId !== usuarioSeleccionado?.ID_rol) {
+        usuarioData.roleId = roleId;
+      }
+  
+      // Llamar a la función onGuardar pasada como prop
+      await onGuardar(usuarioData);
+  
+      // Mostrar mensaje de éxito
+      setMessage({ text: 'Usuario actualizado con éxito', type: 'success' });
+  
+      // Limpiar el formulario después de un tiempo
+      setTimeout(() => {
+        setEmail('');
+        setPassword('');
+        setMessage({ text: '', type: '' });
+        onClose(); // Cerrar el modal
+      }, 2000);
     } catch (error) {
       setMessage({ text: error.message, type: 'error' });
     }
@@ -48,7 +69,7 @@ const UsuarioForm = ({ isOpen, onClose, title }) => {
   return (
     <>
       <FormModal isOpen={isOpen} onClose={onClose} title={title}>
-        <Form onSubmit={handleFormSubmit} onCancel={onClose} cancelText="Cancelar" submitText="Crear">
+        <Form onSubmit={handleFormSubmit} onCancel={onClose} cancelText="Cancelar" submitText={usuarioSeleccionado ? 'Guardar cambios' : 'Crear'}>
           <TextInput
             label="Correo electrónico"
             name="email"
@@ -67,17 +88,19 @@ const UsuarioForm = ({ isOpen, onClose, title }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error=""
-            placeholder="Ingrese su contraseña"
+            placeholder={usuarioSeleccionado ? 'Dejar en blanco para no cambiar' : 'Ingrese su contraseña'}
           />
 
           <SelectInput
             label="Rol"
             name="rol"
-            value={rolEmpleado}
-            onChange={() => {}}
-            options={[{ value: 2, label: 'Empleado' }]}
+            value={roleId}
+            onChange={(e) => setRoleId(Number(e.target.value))}
+            options={[
+              { value: 1, label: 'Administrador' },
+              { value: 2, label: 'Empleado' },
+            ]}
             error=""
-            disabled
           />
         </Form>
       </FormModal>
@@ -92,6 +115,16 @@ UsuarioForm.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
+  usuarioSeleccionado: PropTypes.shape({
+    ID_usuario: PropTypes.number,
+    email: PropTypes.string,
+    ID_rol: PropTypes.number,
+  }),
+  onGuardar: PropTypes.func.isRequired,
+};
+
+UsuarioForm.defaultProps = {
+  usuarioSeleccionado: null,
 };
 
 export default UsuarioForm;

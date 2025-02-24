@@ -1,4 +1,3 @@
-// UsuariosTable.jsx
 import PropTypes from 'prop-types';
 import { PencilIcon, UserIcon } from '@heroicons/react/24/solid';
 import Button from '../common/button';
@@ -12,7 +11,7 @@ const UsuariosTable = ({
   requestSort = () => {} 
 }) => {
   const headers = [
-    { key: 'id', label: 'ID' },
+    { key: 'ID_usuario', label: 'ID' },
     { key: 'email', label: 'Email' },
     { key: 'rol', label: 'Rol' },
     { key: 'estado', label: 'Estado' }
@@ -20,15 +19,13 @@ const UsuariosTable = ({
 
   const renderActions = (usuario) => (
     <>
-      <Button 
-        onClick={() => onEdit(usuario)} 
-        variant="primary" 
-        size="sm" 
-        className={`${usuario.estado !== 'Activo' ? 'opacity-50 cursor-not-allowed' : ''}`}
-        disabled={usuario.estado !== 'Activo'}
-      >
-        <PencilIcon className="h-4 w-4" />
-      </Button>
+<Button 
+  onClick={() => onEdit(usuario)} 
+  variant="primary" 
+  size="sm"
+>
+  <PencilIcon className="h-4 w-4" />
+</Button>
 
       <Button
         onClick={() => onRole(usuario)}
@@ -43,7 +40,7 @@ const UsuariosTable = ({
       </Button>
 
       <Button 
-        onClick={() => onToggleActive(usuario.id)} 
+        onClick={() => onToggleActive(usuario.ID_usuario)} 
         variant={usuario.estado === 'Activo' ? 'danger' : 'success'} 
         size="sm"
       >
@@ -64,7 +61,7 @@ const UsuariosTable = ({
 
 UsuariosTable.propTypes = {
   usuarios: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    ID_usuario: PropTypes.number.isRequired,
     email: PropTypes.string.isRequired,
     rol: PropTypes.string.isRequired,
     estado: PropTypes.string.isRequired,
