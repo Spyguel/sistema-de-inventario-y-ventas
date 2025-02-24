@@ -12,7 +12,7 @@
         user: 'postgres',
         host: 'localhost',
         database: 'sistema-inventario',
-        password: 'password',
+        password: '1234567',
         port: 5432,
     });
 

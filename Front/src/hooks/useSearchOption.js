@@ -51,6 +51,21 @@ const useSearchOptions = (roles) => {
             { value: 'ID_contacto', label: 'ID Cliente' },
             { value: 'ID_item', label: 'ID Item' },
         ],
+        informes: {
+            Inicio: [
+                { key: 'tipo_mov', label: 'Tipo Movimiento', options: ['todos', 'COMPRA', 'VENTA', 'AJUSTE INVENTARIO', 'PRODUCCION', 'CONSUMO INTERNO'] },
+                { key: 'tipo_item', label: 'Tipo de Item', options: ['todos', 'PRODUCTO', 'MATERIA_PRIMA'] },
+                { key: 'estado_pago', label: 'Estado de Pago', options: ['todos', 'PENDIENTE', 'PAGADO', 'PARCIAL'] },
+            ],
+            Egresos: [
+                { key: 'tipo_egreso', label: 'Tipo de Egreso', options: ['todos', 'MATERIA_PRIMA', 'PRODUCTO', 'OPERATIVO', 'SERVICIO'] },
+                { key: 'proveedor', label: 'Proveedor', options: ['todos'] },
+            ],
+            Ranking: [
+                { key: 'criterio', label: 'Criterio', options: ['VENTAS', 'COMPRAS', 'ROTACION', 'FRECUENCIA'] },
+                { key: 'periodo', label: 'Período', options: ['MES', 'TRIMESTRE', 'AÑO'] },
+            ],
+        },
     };
 
     return searchOptions;

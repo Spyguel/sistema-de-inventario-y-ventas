@@ -1,29 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { MagnifyingGlassIcon, XMarkIcon, FunnelIcon } from '@heroicons/react/24/solid';
 import SelectInput from './common/Forms/Imputs/SelectInput';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const BarraBusqueda = ({ 
     onSearch, 
     placeholder = "Buscar...", 
-    options = [],
-    initialFilters = {} 
+    options = [], 
+    initialFilters = {}, 
+    searchButton = true, 
+    onDateChange 
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeFilters, setActiveFilters] = useState(initialFilters);
+    const [showFilters, setShowFilters] = useState(false);
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+
+    const handleSearch = useCallback(() => {
+        onSearch(searchTerm, activeFilters, startDate, endDate);
+    }, [searchTerm, activeFilters, startDate, endDate, onSearch]);
 
     useEffect(() => {
-        handleSearch();
-    }, [activeFilters]);
-
-    const handleSearch = () => {
-        onSearch(searchTerm, activeFilters);
-    };
+        if (!searchButton) handleSearch();
+    }, [activeFilters, searchButton, handleSearch]);
 
     const handleSearchTermChange = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
-        onSearch(term, activeFilters);
+        setSearchTerm(e.target.value);
     };
 
     const handleFilterChange = (key, value) => {
@@ -33,10 +38,18 @@ const BarraBusqueda = ({
         }));
     };
 
+    const handleDateChange = (type, date) => {
+        if (type === 'start') setStartDate(date);
+        if (type === 'end') setEndDate(date);
+        onDateChange(date, startDate, endDate);
+    };
+
     const clearFilters = () => {
         setActiveFilters({});
         setSearchTerm('');
-        onSearch('', {});
+        setStartDate(null);
+        setEndDate(null);
+        onSearch('', {}, null, null);
     };
 
     const getActiveFiltersCount = () => {
@@ -46,7 +59,6 @@ const BarraBusqueda = ({
     return (
         <div className="w-full space-y-4">
             <div className="flex items-center gap-2">
-                {/* Search Input */}
                 <div className="relative flex-grow">
                     <input 
                         type="text"
@@ -67,7 +79,56 @@ const BarraBusqueda = ({
                         </button>
                     )}
                 </div>
+                {searchButton && (
+                    <button
+                        onClick={handleSearch}
+                        className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                    >
+                        Buscar
+                    </button>
+                )}
+                <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                >
+                    <FunnelIcon className="h-5 w-5 text-gray-600" />
+                </button>
             </div>
+
+            {showFilters && (
+                <div className="flex flex-wrap gap-2">
+                    {options.map(({ key, label, options }) => (
+                        <SelectInput 
+                            key={key} 
+                            label={label} 
+                            options={options} 
+                            value={activeFilters[key] || 'todos'} 
+                            onChange={(value) => handleFilterChange(key, value)} 
+                        />
+                    ))}
+                    <div className="flex gap-2">
+                        <div className="flex flex-col">
+                            <label className="block text-sm font-medium text-gray-700">Desde</label>
+                            <DatePicker
+                                selected={startDate}
+                                onChange={(date) => handleDateChange('start', date)}
+                                dateFormat="yyyy/MM/dd"
+                                className="mt-2 p-2 border rounded-lg focus:outline-none focus:ring-2 max-h-8 focus:ring-indigo-500"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="block text-sm font-medium text-gray-700">Hasta</label>
+                            <DatePicker
+                                selected={endDate}
+                                onChange={(date) => handleDateChange('end', date)}
+                                dateFormat="yyyy/MM/dd"
+                                className="mt-2 p-2 border rounded-lg focus:outline-none focus:ring-2 max-h-8 focus:ring-indigo-500"
+                                minDate={startDate} 
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -76,7 +137,9 @@ BarraBusqueda.propTypes = {
     onSearch: PropTypes.func.isRequired,
     placeholder: PropTypes.string,
     options: PropTypes.array,
-    initialFilters: PropTypes.object
+    initialFilters: PropTypes.object,
+    searchButton: PropTypes.bool,
+    onDateChange: PropTypes.func.isRequired,
 };
 
 export default BarraBusqueda;
