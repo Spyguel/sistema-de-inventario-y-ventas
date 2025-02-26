@@ -17,15 +17,20 @@ const UsuariosTable = ({
     { key: 'estado', label: 'Estado' }
   ];
 
+  const usuariosTransformados = usuarios.map(usuario => ({
+    ...usuario,
+    estado: usuario.estado ? 'Activo' : 'Inactivo'
+  }));
+
   const renderActions = (usuario) => (
     <>
-<Button 
-  onClick={() => onEdit(usuario)} 
-  variant="primary" 
-  size="sm"
->
-  <PencilIcon className="h-4 w-4" />
-</Button>
+      <Button 
+        onClick={() => onEdit(usuario)} 
+        variant="primary" 
+        size="sm"
+      >
+        <PencilIcon className="h-4 w-4" />
+      </Button>
 
       <Button
         onClick={() => onRole(usuario)}
@@ -44,7 +49,7 @@ const UsuariosTable = ({
         variant={usuario.estado === 'Activo' ? 'danger' : 'success'} 
         size="sm"
       >
-        {usuario.estado === 'Activo' ? <UserIcon className="h-4 w-4" /> : <UserIcon className="h-4 w-4" />}
+        <UserIcon className="h-4 w-4" />
       </Button>
     </>
   );
@@ -52,7 +57,7 @@ const UsuariosTable = ({
   return (
     <Tabla 
       headers={headers}
-      data={usuarios}
+      data={usuariosTransformados}
       onSort={requestSort}
       renderActions={renderActions}
     />
@@ -64,7 +69,7 @@ UsuariosTable.propTypes = {
     ID_usuario: PropTypes.number.isRequired,
     email: PropTypes.string.isRequired,
     rol: PropTypes.string.isRequired,
-    estado: PropTypes.string.isRequired,
+    estado: PropTypes.bool.isRequired, // Ahora reflejamos que viene como booleano
   })).isRequired,
   onEdit: PropTypes.func.isRequired,
   onRole: PropTypes.func.isRequired,

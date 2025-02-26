@@ -13,7 +13,8 @@ const PermisosTable = ({
   const headers = [
     { key: 'id', label: 'ID' },
     { key: 'nombre', label: 'Nombre' },
-    { key: 'descripcion', label: 'Descripción' }
+    { key: 'descripcion', label: 'Descripción' },
+    { key: 'acceso', label: 'Acceso' }
   ];
 
   const renderActions = (permiso) => (
@@ -27,7 +28,7 @@ const PermisosTable = ({
       </Button>
 
       <Button 
-        onClick={() => onDelete(permiso.id)} 
+        onClick={() => onDelete(permiso.ID_permiso)} 
         variant="danger" 
         size="sm"
       >

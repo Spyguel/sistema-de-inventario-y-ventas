@@ -8,8 +8,7 @@ import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 //FORMULARIO
 import UsuarioForm from '../components/Modals/UsuarioForm.jsx';
 import RolForm from '../components/Modals/RolForm.jsx';
-import PermisosForm from '../components/Modals/PermisosForm.jsx'
-;
+import PermisosForm from '../components/Modals/PermisosForm.jsx';
 import PropTypes from 'prop-types';
 //HOOKS Y FETCH
 import useSearch from '../hooks/useSearch';
@@ -26,7 +25,7 @@ import useModals from '../hooks/useModals';
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
-    const { usuarios, fetchUsuarios } = useFetchUsuarios();
+    const { usuarios, handleGuardarUsuario, handleEliminarUsuario } = useFetchUsuarios();
     const { searchConfig, handleSearch, filterData } = useSearch();
     const { roles, handleGuardarRol, handleEliminarRol, handleAddPermiso } = useRoles();
     const { permisos, handleGuardarPermiso, handleEliminarPermiso } = usePermisos();
@@ -44,50 +43,6 @@ function Usuarios({ permisos: propsPermisos }) {
                 return filterData(permisos, term, filters);
             default:
                 return [];
-        }
-    };
-
-    const handleGuardarUsuario = async (usuarioData) => {
-        try {
-          const url = selectedItems.usuario
-            ? `http://localhost:3000/usuarios/${selectedItems.usuario.ID_usuario}`
-            : 'http://localhost:3000/register';
-      
-          const method = selectedItems.usuario ? 'PUT' : 'POST';
-      
-          const response = await fetch(url, {
-            method,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(usuarioData),
-          });
-      
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Error al guardar el usuario');
-          }
-      
-          fetchUsuarios(); // Actualizar la lista de usuarios
-        } catch (error) {
-          console.error('Error:', error);
-          throw error; // Propagar el error para manejarlo en el UsuarioForm
-        }
-      };
-
-    const handleEliminarUsuario = async (id) => {
-        try {
-            const response = await fetch(`http://localhost:3000/usuarios/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al eliminar el usuario');
-            }
-
-            fetchUsuarios();
-        } catch (error) {
-            console.error('Error:', error);
         }
     };
 
@@ -174,6 +129,7 @@ function Usuarios({ permisos: propsPermisos }) {
                             }}
                             onPermiso={handleAddPermiso}
                             onDelete={handleEliminarRol}
+                            permisos={permisos} //Array de permisos
                         />
                     )}
                     {activeTab === 'permisos' && (
@@ -195,7 +151,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     onClose={() => handleCloseModal('usuarios')}
                     title={selectedItems.usuario ? 'Editar Usuario' : 'Agregar Usuario'}
                     usuarioSeleccionado={selectedItems.usuario}
-                    onGuardar={handleGuardarUsuario}
+                    onGuardar={(usuarioData) => handleGuardarUsuario(usuarioData, selectedItems)}
                     permisos={propsPermisos}
                 />
             )}
