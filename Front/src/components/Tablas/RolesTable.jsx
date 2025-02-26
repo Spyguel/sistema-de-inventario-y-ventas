@@ -20,15 +20,13 @@ const RolesTable = ({
 
   // Función para abrir el modal antes de llamar a onPermiso
   const handleAddPermisoARol = (rol) => {
-    alert("Hasta aqui llego")
     setSelectedRol(rol);
-    alert("Hasra aqui tambien")
     setShowPermisoModal(true);
   };
 
   // Confirmar selección de permisos y llamar a onPermiso
-  const handleConfirmPermisos = (rol, permisosSeleccionados) => {
-    onPermiso(rol, permisosSeleccionados);
+  const handleConfirmPermisos = (ID_rol, permisosSeleccionados) => {
+    onPermiso(ID_rol, permisosSeleccionados);
     setShowPermisoModal(false);
   };
 
@@ -89,12 +87,13 @@ const RolesTable = ({
       
       {showPermisoModal && selectedRol && (
         <RolPermisoForm
-          isOpen={showPermisoModal}
-          onClose={() => setShowPermisoModal(false)}
-          onPermiso={(permisosSeleccionados) => handleConfirmPermisos(selectedRol, permisosSeleccionados)}
-          permisos={permisos}
-          rolSeleccionado={selectedRol}
-        />
+        isOpen={showPermisoModal}
+        onClose={() => setShowPermisoModal(false)}
+        onPermiso={(permisosSeleccionados) => handleConfirmPermisos(selectedRol, permisosSeleccionados)}
+        permisos={permisos}
+        rolSeleccionado={selectedRol} 
+      />
+      
       )}
     </>
   );

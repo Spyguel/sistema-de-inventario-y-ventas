@@ -1,33 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-const useRolPermiso = () => {
-  // Función para guardar permisos asignados a un rol
-  const guardarRolPermiso= async (selected_ID, selected_permisos) => {
-    try {
-      const response = await fetch('http://localhost:3000/RolPer', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          rolId: selected_ID,
-          permisos: selected_permisos,
-        }),
-      });
+const useFetchRolPermiso = () => {
+    const [rolPermiso, setRolPermiso] = useState([]);
 
-      if (!response.ok) {
-        throw new Error('Error al guardar los permisos');
-      }
+    const handleGuardarRolPermiso = async (idRol, permisos) => {
+        try {
+            // Extraer los IDs de permisos antes de enviarlos
+            const permisosIds = permisos.map(p => p.ID_permiso);
 
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error('Error en handleGuardarRolPermiso:', error);
-      throw error;
-    }
-  };
+            console.log('📤 Enviando datos:', { idRol, permisos: permisosIds });
 
-  return { guardarRolPermiso };
+            const response = await fetch('http://localhost:3000/RolPer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idRol: String(idRol), permisos: permisosIds }), // Ahora permisos es solo un array de números
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al guardar el rol-permiso');
+            }
+
+            const data = await response.json();
+            setRolPermiso(data); // Actualiza el estado con los nuevos permisos
+        } catch (error) {
+            console.error('❌ Error en handleGuardarRolPermiso:', error);
+            throw error;
+        }
+    };
+
+    return { rolPermiso, handleGuardarRolPermiso };
 };
 
-export default useRolPermiso;
+export default useFetchRolPermiso;

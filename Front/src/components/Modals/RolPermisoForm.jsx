@@ -12,7 +12,7 @@ const RolPermisoForm = ({ isOpen, onClose, permisos = [], rolSeleccionado }) => 
   const [toastType, setToastType] = useState('success');
 
   // Extraemos la función que guarda en la base de datos desde el hook.
-  const { guardarRolPermiso } = useFetchRolPermiso();
+  const { handleGuardarRolPermiso } = useFetchRolPermiso();
 
   useEffect(() => {
     if (!isOpen) {
@@ -28,7 +28,7 @@ const RolPermisoForm = ({ isOpen, onClose, permisos = [], rolSeleccionado }) => 
     );
   };
 
-  const handleGuardarRolPermiso = async (e) => {
+  const GuardarRolPermiso = async (e) => {
     e.preventDefault();
     if (selectedPermisos.length === 0) {
       setMessageModalOpen(true);
@@ -37,16 +37,21 @@ const RolPermisoForm = ({ isOpen, onClose, permisos = [], rolSeleccionado }) => 
       return;
     } else {
       try {
-        await guardarRolPermiso(rolSeleccionado, selectedPermisos);
+        // Extraemos el id desde la propiedad 'id'
+    console.log("ID Rol:", rolSeleccionado.id);
+    console.log("Permisos seleccionados:", selectedPermisos);
+    await handleGuardarRolPermiso(String(rolSeleccionado.id), selectedPermisos.map(id => ({ ID_permiso: id })));
+
         onClose();
       } catch (error) {
         setMessageModalOpen(true);
         setToastMessage('Error al guardar los permisos.');
         setToastType('error');
-        console.log(error)
+        console.error(error);
       }
     }
-  };
+  };  
+  
 
   return (
     <>
@@ -55,13 +60,12 @@ const RolPermisoForm = ({ isOpen, onClose, permisos = [], rolSeleccionado }) => 
         onClose={onClose}
         title={`Asignar Permisos a ${rolSeleccionado?.nombre || ''}`}
       >
-        {/* Opcionalmente se puede envolver en un formulario */}
-        <form onSubmit={handleGuardarRolPermiso}>
+        <form onSubmit={GuardarRolPermiso}>
           <div className="h-72 space-y-4">
             <h3 className="text-lg font-semibold text-gray-800">
               Seleccione los permisos que desea asignar:
             </h3>
-            {permisos && permisos.length > 0 ? (
+            {permisos.length > 0 ? (
               permisos.map((permiso) => (
                 <label
                   key={permiso.ID_permiso}
@@ -115,7 +119,11 @@ RolPermisoForm.propTypes = {
       descripcion: PropTypes.string.isRequired,
     })
   ).isRequired,
-  rolSeleccionado: PropTypes.object,
+  // Ahora se espera que el rol tenga 'id' y 'nombre'
+  rolSeleccionado: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    nombre: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default RolPermisoForm;

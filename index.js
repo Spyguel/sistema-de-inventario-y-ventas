@@ -34,7 +34,7 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // Permite solicitudes desde este origen
+  origin: 'http://localhost:5173', 
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
@@ -463,37 +463,36 @@ app.delete('/permisos/:id', async (req, res) => {
   }
 });
 
+
+app.get('/RolPer', (req, res) => {
+  res.send('Ruta /RolPer funcionando, pero usa POST para enviar datos.');
+});
+
+
 // Función para guardar un RolPermiso en la base de datos
-const guardarRolPermiso = async (idRol, idPermiso) => {
-    try {
-      const result = await pool.query(
-        'INSERT INTO public."ROL_PERMISO" ("ID_rol", "ID_permiso") VALUES ($1, $2) RETURNING *',
-        [idRol, idPermiso]
-      );
-      return result.rows[0];
-    } catch (error) {
-      console.error('Error al guardar RolPermiso:', error);
-      throw error;
-    }
-  };
-  
-  // Función para obtener la lista de permisos asociados a un rol específico
-  const obtenerPermisosPorRol = async (idRol) => {
-    try {
-      const result = await pool.query(
-        `SELECT p.* 
-         FROM public."PERMISOS" p 
-         JOIN public."ROL_PERMISO" rp ON rp."ID_permiso" = p."ID_permiso" 
-         WHERE rp."ID_rol" = $1`,
-        [idRol]
-      );
-      return result.rows;
-    } catch (error) {
-      console.error('Error al obtener permisos para el rol:', error);
-      throw error;
-    }
-  };
-  
+app.post('/RolPer', async (req, res) => {
+  try {
+    console.log("Datos recibidos en /RolPer:", req.body);
+    const { idRol, permisos } = req.body;
+
+    // Construcción de la consulta SQL
+    const values = permisos.map(permisoId => `(${idRol}, ${permisoId})`).join(',');
+    const query = `INSERT INTO public."ROL_PERMISO" ("ID_rol", "ID_permiso") VALUES ${values} RETURNING *`;
+
+    console.log('Consulta SQL:', query);
+
+    // Ejecución de la consulta
+    const result = await pool.query(query);
+    console.log('Inserción exitosa:', result.rows);
+
+    res.status(201).json(result.rows);
+  } catch (error) {
+    console.error('Error en /RolPer:', error);
+    res.status(500).json({ error: 'Error interno del servidor', detalle: error.message });
+  }
+});
+
+
 
 // Configuración del servidor
 const PORT = 3000;
