@@ -113,11 +113,13 @@ function Usuarios({ permisos: propsPermisos }) {
                     {activeTab === 'usuarios' && (
                         <UsuariosTable
                             usuarios={getFilteredData()}
+                            roles={roles}
                             onEdit={(usuario) => {
                                 setSelectedItems(prev => ({ ...prev, usuario }));
                                 handleOpenModal('usuarios');
                             }}
                             onDelete={handleEliminarUsuario}
+
                         />
                     )}
                     {activeTab === 'roles' && (

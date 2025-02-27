@@ -1,15 +1,31 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { PencilIcon, UserIcon } from '@heroicons/react/24/solid';
 import Button from '../common/button';
 import Tabla from '../common/Tabla';
+import UsuarioRolForm from '../Modals/UsuarioRolForm.jsx';
 
 const UsuariosTable = ({ 
   usuarios = [], 
+  roles = [],
   onEdit,
   onRole,
   onToggleActive,
   requestSort = () => {} 
 }) => {
+  const [selectedUsuario, setSelectedUsuario] = useState(null);
+  const [showRoleModal, setShowRoleModal] = useState(false);
+
+  const handleRole = (usuario) => {
+    setSelectedUsuario(usuario);
+    setShowRoleModal(true);
+  };
+
+  const handleConfirmRole = (usuario, nuevoRol) => {
+    onRole(usuario.ID_usuario, nuevoRol);
+    setShowRoleModal(false);
+  };
+
   const headers = [
     { key: 'ID_usuario', label: 'ID' },
     { key: 'email', label: 'Email' },
@@ -33,7 +49,7 @@ const UsuariosTable = ({
       </Button>
 
       <Button
-        onClick={() => onRole(usuario)}
+        onClick={() => handleRole(usuario)}
         variant="primary"
         size="sm"
         className={`${usuario.estado !== 'Activo' ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -55,12 +71,24 @@ const UsuariosTable = ({
   );
 
   return (
-    <Tabla 
-      headers={headers}
-      data={usuariosTransformados}
-      onSort={requestSort}
-      renderActions={renderActions}
-    />
+    <>
+      <Tabla 
+        headers={headers}
+        data={usuariosTransformados}
+        onSort={requestSort}
+        renderActions={renderActions}
+      />
+      
+      {showRoleModal && selectedUsuario && (
+        <UsuarioRolForm
+          isOpen={showRoleModal}
+          onClose={() => setShowRoleModal(false)}
+          onConfirm={(nuevoRol) => handleConfirmRole(selectedUsuario, nuevoRol)}
+          usuarioSeleccionado={selectedUsuario}
+          roles={roles}   
+        />
+      )}
+    </>
   );
 };
 
@@ -69,7 +97,12 @@ UsuariosTable.propTypes = {
     ID_usuario: PropTypes.number.isRequired,
     email: PropTypes.string.isRequired,
     rol: PropTypes.string.isRequired,
-    estado: PropTypes.bool.isRequired, // Ahora reflejamos que viene como booleano
+    estado: PropTypes.bool.isRequired,
+  })).isRequired,
+  roles: PropTypes.arrayOf(PropTypes.shape({
+    ID_rol: PropTypes.number.isRequired,
+    nombre: PropTypes.string.isRequired,
+    descripcion: PropTypes.string.isRequired,
   })).isRequired,
   onEdit: PropTypes.func.isRequired,
   onRole: PropTypes.func.isRequired,
