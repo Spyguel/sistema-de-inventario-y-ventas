@@ -9,6 +9,7 @@ const {contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem} = r
 const { items } = require('./Controllers/itemsController');
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
+const {Rolper, postRolPer} = require('./Controllers/rolPermisoController');
 
 
 
@@ -95,33 +96,11 @@ app.put('/permisos/:id', PutPermisos);
 app.delete('/permisos/:id', DeletePermisos);
 
 
-app.get('/RolPer', (req, res) => {
-  res.send('Ruta /RolPer funcionando, pero usa POST para enviar datos.');
-});
+app.get('/RolPer', Rolper);
 
 
 // Función para guardar un RolPermiso en la base de datos
-app.post('/RolPer', async (req, res) => {
-  try {
-    console.log("Datos recibidos en /RolPer:", req.body);
-    const { idRol, permisos } = req.body;
-
-    // Construcción de la consulta SQL
-    const values = permisos.map(permisoId => `(${idRol}, ${permisoId})`).join(',');
-    const query = `INSERT INTO public."ROL_PERMISO" ("ID_rol", "ID_permiso") VALUES ${values} RETURNING *`;
-
-    console.log('Consulta SQL:', query);
-
-    // Ejecución de la consulta
-    const result = await pool.query(query);
-    console.log('Inserción exitosa:', result.rows);
-
-    res.status(201).json(result.rows);
-  } catch (error) {
-    console.error('Error en /RolPer:', error);
-    res.status(500).json({ error: 'Error interno del servidor', detalle: error.message });
-  }
-});
+app.post('/RolPer', postRolPer);
 
 app.use('/auth', router);
 // Configuración del servidor
