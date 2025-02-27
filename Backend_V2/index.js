@@ -11,8 +11,6 @@ const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require(
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const {Rolper, postRolPer} = require('./Controllers/rolPermisoController');
 
-
-
 pool.connect()
   .then(client => {
     console.log('✅ Conexión exitosa a PostgreSQL');
@@ -95,9 +93,7 @@ app.put('/permisos/:id', PutPermisos);
 // Eliminar un permiso (con transacción para borrar también las relaciones en ROL_PERMISO)
 app.delete('/permisos/:id', DeletePermisos);
 
-
 app.get('/RolPer', Rolper);
-
 
 // Función para guardar un RolPermiso en la base de datos
 app.post('/RolPer', postRolPer);
