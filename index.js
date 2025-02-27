@@ -492,6 +492,22 @@ app.post('/RolPer', async (req, res) => {
   }
 });
 
+app.post('/UsuarioRol', async (req, res) => {
+  try {
+    console.log("Datos recibidos en /UsuarioRol:", req.body);
+    const { idUsuario, idRol } = req.body;
+
+    const result = await pool.query(
+      'UPDATE public."USUARIO" SET "ID_rol" = $1 WHERE "ID_usuario" = $2 RETURNING *',
+      [idRol, idUsuario]
+    );
+
+    res.status(201).json(result.rows);
+  } catch (error) {
+    console.error('Error en /UsuarioRol:', error);
+    res.status(500).json({ error: 'Error interno del servidor', detalle: error.message });
+  }
+});
 
 
 // Configuración del servidor

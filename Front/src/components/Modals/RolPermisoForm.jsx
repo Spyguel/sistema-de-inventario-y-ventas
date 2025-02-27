@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import FormModal from '../common/common/Forms/FormModal';
 import Message from '../common/common/Messages/Message';
 import Button from '../common/button';
-import useFetchRolPermiso from '../../hooks/useFetchRolPermiso';
+import useFetchRolPermiso from '../../hooks/useFetchRolPermiso.js';
 
 const RolPermisoForm = ({ isOpen, onClose, permisos = [], rolSeleccionado }) => {
   const [selectedPermisos, setSelectedPermisos] = useState([]);
