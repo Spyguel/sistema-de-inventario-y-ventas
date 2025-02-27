@@ -1,0 +1,10 @@
+const pool = require('../db');
+
+// En rolPermisoController.js
+const Rolper = async (req, res) => {
+    res.send('Ruta /RolPer funcionando, pero usa POST para enviar datos.');
+};
+
+module.exports = {
+    Rolper
+};
