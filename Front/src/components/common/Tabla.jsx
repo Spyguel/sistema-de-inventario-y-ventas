@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 
 const Tabla = ({ headers, data, onSort, renderActions }) => {
   return (
-    <div className="flex-grow overflow-hidden rounded-lg shadow-lg m-3 ">
-      <div className="h-full overflow-hidden">
-        <div className="overflow-auto max-h-[60vh]">
+    <div className="h-[100%] flex-grow rounded-lg shadow-lg m-3 ">
+      <div className="">
+        <div className="overflow-auto max-h-[35vh]">
           <table className="w-full bg-background rounded-lg" aria-label="Tabla General">
             <thead className="sticky top-0 z-10">
               <tr className="bg-tableHeader  text-white">

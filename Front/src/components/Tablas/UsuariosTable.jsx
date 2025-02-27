@@ -26,6 +26,11 @@ const UsuariosTable = ({
     setShowRoleModal(false);
   };
 
+  const handleActive = (ID_usuario) =>{
+    onToggleActive(ID_usuario);
+  };
+
+
   const headers = [
     { key: 'ID_usuario', label: 'ID' },
     { key: 'email', label: 'Email' },
@@ -61,7 +66,7 @@ const UsuariosTable = ({
       </Button>
 
       <Button 
-        onClick={() => onToggleActive(usuario.ID_usuario)} 
+        onClick={() => handleActive(usuario.ID_usuario)} 
         variant={usuario.estado === 'Activo' ? 'danger' : 'success'} 
         size="sm"
       >

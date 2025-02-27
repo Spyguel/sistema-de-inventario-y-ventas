@@ -19,11 +19,11 @@ const useFetchUsuarios = () => {
     const handleGuardarUsuario = async (usuarioData, selectedItems) => {
         try {
             const url = selectedItems.usuario
-                ? `http://localhost:3000/usuarios/${selectedItems.usuario.ID_usuario}`
-                : 'http://localhost:3000/register';
-
+                ? `http://localhost:3000/usuarios/${selectedItems.usuario.ID_usuario}` // Actualizar usuario
+                : 'http://localhost:3000/usuarios'; // Crear nuevo usuario
+    
             const method = selectedItems.usuario ? 'PUT' : 'POST';
-
+    
             const response = await fetch(url, {
                 method,
                 headers: {
@@ -31,34 +31,34 @@ const useFetchUsuarios = () => {
                 },
                 body: JSON.stringify(usuarioData),
             });
-
+    
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Error al guardar el usuario');
             }
-
-            fetchUsuarios();
+    
+            fetchUsuarios(); // Recargar la lista de usuarios
         } catch (error) {
             console.error('Error:', error);
             throw error;
         }
     };
-
-    const handleEliminarUsuario = async (id) => {
+    
+    const handleToggleActive = async (id) => {
         try {
             const response = await fetch(`http://localhost:3000/usuarios/${id}`, {
                 method: 'DELETE',
             });
-
             if (!response.ok) {
-                throw new Error('Error al eliminar el usuario');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Error al cambiar el estado del usuario');
             }
-
             fetchUsuarios();
         } catch (error) {
             console.error('Error:', error);
         }
     };
+    
 
     useEffect(() => {
         fetchUsuarios();
@@ -68,7 +68,7 @@ const useFetchUsuarios = () => {
         usuarios,
         fetchUsuarios,
         handleGuardarUsuario,
-        handleEliminarUsuario,
+        handleToggleActive,
     };
 };
 

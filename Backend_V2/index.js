@@ -4,12 +4,13 @@ const morgan = require('morgan');
 const pool = require('./db');
 const cors = require('cors');
 const {register, login} = require('./Routes/auth.routes');
-const {usuarios, putUsuarios} = require('./Controllers/usersController');
+const {usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
 const {contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem} = require('./Controllers/ContactController');
 const { items } = require('./Controllers/itemsController');
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const {Rolper, postRolPer} = require('./Controllers/rolPermisoController');
+const {UsuarioRol} = require('./Controllers/usersRolController');
 
 pool.connect()
   .then(client => {
@@ -43,7 +44,10 @@ router.post('/login', login);
 
 // Ruta para listar usuarios
 app.get('/usuarios', usuarios);
+app.post('/usuarios', postUsuario);
 app.put('/usuarios/:id', putUsuarios);
+app.delete('/usuarios/:id', toggleUserStatusOrDelete);
+
 
 // ─── RUTAS CONTACTO ─────────────────────────────────────────────
 
@@ -98,6 +102,12 @@ app.get('/RolPer', Rolper);
 // Función para guardar un RolPermiso en la base de datos
 app.post('/RolPer', postRolPer);
 
+// ─── RUTAS DE USUARIO_ROL ─────────────────────────────────────────────
+
+// funcion para cambiar el rol de un usuario 
+app.post('/UsuarioRol', UsuarioRol);
+
+// ─── RUTAS DE AUTENTICACIÓN ─────────────────────────────────────────────
 app.use('/auth', router);
 // Configuración del servidor
 const PORT = 3000;

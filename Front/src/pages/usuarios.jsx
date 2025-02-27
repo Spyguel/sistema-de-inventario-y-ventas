@@ -13,19 +13,15 @@ import PropTypes from 'prop-types';
 //HOOKS Y FETCH
 import useSearch from '../hooks/useSearch';
 import useSearchOptions from '../hooks/useSearchOption.js';
-
 import useFetchUsuarios from '../hooks/useFetchUsuarios';
-
 import useRoles from '../hooks/useRoles';
-
 import usePermisos from '../hooks/usePermisos';
-
 import useModals from '../hooks/useModals';
 
 
 function Usuarios({ permisos: propsPermisos }) {
     const [activeTab, setActiveTab] = useState('usuarios');
-    const { usuarios, handleGuardarUsuario, handleEliminarUsuario } = useFetchUsuarios();
+    const { usuarios, handleGuardarUsuario, handleEliminarUsuario, handleToggleActive } = useFetchUsuarios();
     const { searchConfig, handleSearch, filterData } = useSearch();
     const { roles, handleGuardarRol, handleEliminarRol, handleAddPermiso } = useRoles();
     const { permisos, handleGuardarPermiso, handleEliminarPermiso } = usePermisos();
@@ -46,6 +42,7 @@ function Usuarios({ permisos: propsPermisos }) {
         }
     };
 
+    
     return (
         <div className="h-[100%] ml-10 p-4">
             <div className="rounded-lg shadow-lg p-6 h-[95%]">
@@ -109,18 +106,19 @@ function Usuarios({ permisos: propsPermisos }) {
                     initialFilters={searchConfig.filters}
                 />
 
-                <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
-                    {activeTab === 'usuarios' && (
-                        <UsuariosTable
-                            usuarios={getFilteredData()}
-                            roles={roles}
-                            onEdit={(usuario) => {
-                                setSelectedItems(prev => ({ ...prev, usuario }));
-                                handleOpenModal('usuarios');
-                            }}
-                            onDelete={handleEliminarUsuario}
-
-                        />
+                <div className="mt-4 border border-gray-200 rounded-lg h-[60%]">
+                {activeTab === 'usuarios' && (
+                    <UsuariosTable
+                        usuarios={getFilteredData()}
+                        roles={roles}
+                        onEdit={(usuario) => {
+                            setSelectedItems(prev => ({ ...prev, usuario }));
+                            handleOpenModal('usuarios');
+                        }}
+                        onDelete={handleEliminarUsuario}
+                        onRole={handleAddPermiso} 
+                        onToggleActive={handleToggleActive}
+                    />
                     )}
                     {activeTab === 'roles' && (
                         <RolesTable
