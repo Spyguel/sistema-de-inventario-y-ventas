@@ -155,6 +155,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     usuarioSeleccionado={selectedItems.usuario}
                     onGuardar={(usuarioData) => handleGuardarUsuario(usuarioData, selectedItems)}
                     permisos={propsPermisos}
+                    roles={roles}
                 />
             )}
 

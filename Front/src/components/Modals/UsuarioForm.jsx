@@ -5,12 +5,20 @@ import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
 import { useState, useEffect } from 'react';
 
-const UsuarioForm = ({ isOpen, onClose, title, usuarioSeleccionado, onGuardar }) => {
+const UsuarioForm = ({
+  isOpen,
+  onClose,
+  title,
+  usuarioSeleccionado = null, // Valor por defecto aquí
+  onGuardar,
+  roles
+}) => {
   // Estados para los inputs
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [roleId, setRoleId] = useState(2); // Valor por defecto para "Empleado"
-  const [message, setMessage] = useState({ text: '', type: '' });
+  const [message, setMessage] = useState({ isOpen: false, text: '', type: '' });
+  const [actionType, setActionType] = useState(''); // 'edit' o 'create'
 
   // Cargar los datos del usuario seleccionado al abrir el modal
   useEffect(() => {
@@ -18,11 +26,13 @@ const UsuarioForm = ({ isOpen, onClose, title, usuarioSeleccionado, onGuardar })
       setEmail(usuarioSeleccionado.email);
       setRoleId(usuarioSeleccionado.ID_rol);
       setPassword(''); // No cargamos la contraseña por seguridad
+      setActionType('edit'); // Establecer el tipo de acción a 'edit'
     } else {
       // Si no hay usuario seleccionado, reiniciamos los campos
       setEmail('');
       setPassword('');
       setRoleId(2);
+      setActionType('create'); // Establecer el tipo de acción a 'create'
     }
   }, [usuarioSeleccionado]);
 
@@ -52,17 +62,17 @@ const UsuarioForm = ({ isOpen, onClose, title, usuarioSeleccionado, onGuardar })
       await onGuardar(usuarioData);
   
       // Mostrar mensaje de éxito
-      setMessage({ text: 'Usuario actualizado con éxito', type: 'success' });
+      setMessage({ isOpen: true, text: actionType === 'edit' ? 'Usuario editado con éxito' : 'Usuario creado con éxito', type: 'success' });
   
       // Limpiar el formulario después de un tiempo
       setTimeout(() => {
         setEmail('');
         setPassword('');
-        setMessage({ text: '', type: '' });
+        setMessage({ isOpen: false, text: '', type: '' });
         onClose(); // Cerrar el modal
-      }, 2000);
+      }, 3000); // Aumentar el tiempo de visualización del mensaje
     } catch (error) {
-      setMessage({ text: error.message, type: 'error' });
+      setMessage({ isOpen: true, text: error.message, type: 'error' });
     }
   };
 
@@ -96,17 +106,22 @@ const UsuarioForm = ({ isOpen, onClose, title, usuarioSeleccionado, onGuardar })
             name="rol"
             value={roleId}
             onChange={(e) => setRoleId(Number(e.target.value))}
-            options={[
-              { value: 1, label: 'Administrador' },
-              { value: 2, label: 'Empleado' },
-            ]}
+            options={roles.map((rol) => ({
+              value: rol.ID_rol, // Cambia a ID_rol para que sea el valor correcto
+              label: rol.nombre,  // Asegúrate de que el label sea el nombre del rol
+            }))}
             error=""
           />
         </Form>
       </FormModal>
 
       {/* Mensaje de éxito o error */}
-      <Message isOpen={!!message.text} onClose={() => setMessage({ text: '', type: '' })} message={message.text} type={message.type} />
+      <Message 
+        isOpen={message .isOpen} 
+        onClose={() => setMessage({ ...message, isOpen: false })} 
+        message={message.text} 
+        type={message.type} 
+      />
     </>
   );
 };
@@ -121,10 +136,12 @@ UsuarioForm.propTypes = {
     ID_rol: PropTypes.number,
   }),
   onGuardar: PropTypes.func.isRequired,
-};
-
-UsuarioForm.defaultProps = {
-  usuarioSeleccionado: null,
+  roles: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID_rol: PropTypes.number,
+      nombre: PropTypes.string,
+    })
+  ).isRequired,
 };
 
 export default UsuarioForm;
