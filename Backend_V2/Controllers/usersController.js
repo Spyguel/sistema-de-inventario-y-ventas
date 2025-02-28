@@ -10,7 +10,6 @@ const usuarios = async (req, res) => {
        JOIN public."ROL" r ON u."ID_rol" = r."ID_rol"`
     );
     res.status(200).json({ usuarios: result.rows });
-    console.log("USUARIOS OBTENIDOS:", result.rows);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });

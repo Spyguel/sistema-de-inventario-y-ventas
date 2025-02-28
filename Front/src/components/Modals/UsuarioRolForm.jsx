@@ -5,6 +5,7 @@ import Message from '../common/common/Messages/Message';
 import Button from '../common/button';
 import useFetchUsuarioRol from '../../hooks/useFetchUsuariosRol.js';
 
+
 const UsuarioRolForm = ({ isOpen, onClose, usuarioSeleccionado, roles = [] }) => {
   const [selectedRol, setSelectedRol] = useState(null);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
@@ -29,9 +30,6 @@ const UsuarioRolForm = ({ isOpen, onClose, usuarioSeleccionado, roles = [] }) =>
     }
 
     try {
-      console.log("ID Usuario:", usuarioSeleccionado.ID_usuario);
-      console.log("Nuevo Rol:", selectedRol);
-
       await handleGuardarUsuarioRol(usuarioSeleccionado.ID_usuario, selectedRol);
       onClose();
     } catch (error) {

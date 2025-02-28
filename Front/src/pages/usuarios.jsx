@@ -45,7 +45,7 @@ function Usuarios({ permisos: propsPermisos }) {
     
     return (
         <div className="h-[100%] ml-10 p-4">
-            <div className="rounded-lg shadow-lg p-6 h-[95%]">
+            <div className="rounded-lg shadow-lg p-4 h-[95%]">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de {activeTab}</h2>
                 <p className="text-sm text-gray-500 mb-4">
                     {activeTab === 'usuarios' && 'Administra los usuarios y sus roles en el sistema'}
@@ -53,7 +53,7 @@ function Usuarios({ permisos: propsPermisos }) {
                     {activeTab === 'permisos' && 'Configura los permisos disponibles en el sistema'}
                 </p>
 
-                <div className="flex space-x-4 mb-6 justify-end">
+                <div className="flex space-x-4 mb-4 justify-end">
                     <Button
                         onClick={() => setActiveTab('usuarios')}
                         variant={activeTab === 'usuarios' ? 'primary' : 'default'}

@@ -3,14 +3,15 @@ const express = require('express');
 const morgan = require('morgan');
 const pool = require('./db');
 const cors = require('cors');
-const {register, login} = require('./Routes/auth.routes');
-const {usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
-const {contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem} = require('./Controllers/ContactController');
-const { items } = require('./Controllers/itemsController');
+const { register, login} = require('./Routes/auth.routes');
+const { usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
+const { contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem} = require('./Controllers/ContactController');
+const { getItems, getItemsTipo } = require('./Controllers/itemsController');
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
-const {Rolper, postRolPer} = require('./Controllers/rolPermisoController');
-const {UsuarioRol} = require('./Controllers/usersRolController');
+const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
+const { UsuarioRol} = require('./Controllers/usersRolController');
+const { Movimientos, toggleMovStatus } = require('./Controllers/movimientosController.js');
 
 pool.connect()
   .then(client => {
@@ -64,7 +65,8 @@ app.get('/contacto_item',getcontactoItem);
 // ─── RUTAS ITEM ─────────────────────────────────────────────
 // Se elimina la duplicidad. Conservamos una sola definición de GET /items
 
-app.get('/items', items );
+app.get('/items', getItems );
+app.get('/items/:tipo', getItemsTipo);
 
 // ─── RUTAS ROL ─────────────────────────────────────────────
 
@@ -109,6 +111,11 @@ app.post('/UsuarioRol', UsuarioRol);
 
 // ─── RUTAS DE AUTENTICACIÓN ─────────────────────────────────────────────
 app.use('/auth', router);
+
+// ─── RUTAS DE MOVIMIENTOS ─────────────────────────────────────────────
+app.get('/movimientos', Movimientos);
+app.delete('/movimientos/:id', toggleMovStatus);
+
 // Configuración del servidor
 const PORT = 3000;
 app.listen(PORT, () => {

@@ -1,14 +1,113 @@
+import Button from '../components/common/button.jsx';
+import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
+import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
+import MovimientoForm from '../components/Modals/MovimientoForm.jsx';
+import PropTypes from 'prop-types';
+import useSearch from '../hooks/useSearch';
+import useSearchOptions from '../hooks/useSearchOption.js';
+import useFetchMovimientos from '../hooks/useFetchMovimientos.js';
+import { useState } from 'react';
 
-function Informes() {
+function Movimientos({ items, usuarios, contactos, documentos }) {
+  const { movimientos, handleGuardarMovimiento, handleToggleActive } = useFetchMovimientos();
 
-    return(
-        <div className="min-h-screen bg-gray-100 p-6">
-            <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
-                <h1 className="text-2xl font-semibold mb-4">Informes</h1>
-                <p className="text-sm text-gray-500">28/1/2025, 17:16:52</p>
-            </div>
+  const { searchConfig, handleSearch, filterData } = useSearch();
+  const searchOptions = useSearchOptions(movimientos);
+  
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const openForm = () => setIsFormOpen(true);
+  const closeForm = () => setIsFormOpen(false);
+
+  const getFilteredData = () => {
+    const { term, filters } = searchConfig;
+    // Se filtran los movimientos ya "joinados"
+    const filteredMovimientos = filterData(movimientos, term, filters);
+    return filteredMovimientos;
+  };
+
+  const getFechaHoraActual = () => {
+    const ahora = new Date();
+    return ahora.toLocaleDateString('es-ES') + ', ' + ahora.toLocaleTimeString('es-ES');
+  };
+
+  return (
+    <div className="h-full ml-10 p-4">
+      <div className="rounded-lg shadow-lg p-4 h-[95%]">
+        <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
+        <p className="text-sm text-gray-500 mb-4">{getFechaHoraActual()}</p>
+        <div className="flex justify-end mb-4">
+          <Button
+            variant="success"
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+            onClick={openForm}
+          >
+            + Nuevo movimiento
+          </Button>
         </div>
-    )
 
+        <BarraBusqueda
+          onSearch={handleSearch}
+          placeholder="Buscar movimientos..."
+          options={searchOptions.movimientos || []}
+          initialFilters={searchConfig.filters}
+        />
+
+        <div className="mt-4 border border-gray-200 rounded-lg h-[60%]">
+          <MovimientosTable
+            movimientos={getFilteredData()}
+            onToggleActive={handleToggleActive}
+          />
+        </div>
+      </div>
+
+      <MovimientoForm
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        onGuardar={(movimientoData) => handleGuardarMovimiento(movimientoData)}
+        items={items}
+        usuarios={usuarios}
+        contactos={contactos}
+        documentos={documentos}
+      />
+    </div>
+  );
 }
-export default Informes;
+
+Movimientos.propTypes = {
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID_item: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired,
+      stock: PropTypes.number
+    })
+  ).isRequired,
+  usuarios: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID_usuario: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  contactos: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID_contacto: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired,
+      tipo: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  documentos: PropTypes.arrayOf(
+    PropTypes.shape({
+      ID_documento: PropTypes.number.isRequired,
+      nombre: PropTypes.string.isRequired
+    })
+  ).isRequired
+};
+
+Movimientos.defaultProps = {
+  items: [],
+  usuarios: [],
+  contactos: [],
+  documentos: []
+};
+
+export default Movimientos;
