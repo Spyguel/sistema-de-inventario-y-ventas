@@ -12,6 +12,7 @@ function useFetchMovimientos() {
       const data = await response.json();
       // Se espera que el backend devuelva { movimientos: [...] }
       setMovimientos(data.movimientos);
+      console.log('Movimientos:', data.movimientos);
     } catch (error) {
       console.error('Error:', error);
     }

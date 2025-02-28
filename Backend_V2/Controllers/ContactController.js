@@ -23,6 +23,21 @@ const contacto = async (req, res) => {
       }
 }
 
+const getContactosMovimiento = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id_contacto, nombre, tipo_contacto
+       FROM public."contacto"`
+    );
+    res.status(200).json({ contactos: result.rows });
+  } catch (error) {
+    console.error('Error al obtener contactos:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+
+
 const postcontacto = async (req, res) => {
     try {
         console.log(req.body);
@@ -134,5 +149,6 @@ module.exports = {
     postcontacto,
     deletecontacto,
     putcontacto,
-    getcontactoItem
+    getcontactoItem,
+    getContactosMovimiento
 }

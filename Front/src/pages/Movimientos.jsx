@@ -1,16 +1,21 @@
+import { useState } from 'react';
+import PropTypes from 'prop-types';
+
 import Button from '../components/common/button.jsx';
 import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 import MovimientoForm from '../components/Modals/MovimientoForm.jsx';
-import PropTypes from 'prop-types';
+
 import useSearch from '../hooks/useSearch';
 import useSearchOptions from '../hooks/useSearchOption.js';
 import useFetchMovimientos from '../hooks/useFetchMovimientos.js';
-import { useState } from 'react';
+import useContactos from '../hooks/useContactos.js';
+import useItems from '../hooks/useItems.js'
 
-function Movimientos({ items, usuarios, contactos, documentos }) {
+function Movimientos({ usuarios, documentos }) {
   const { movimientos, handleGuardarMovimiento, handleToggleActive } = useFetchMovimientos();
-
+  const { contactos: contactosData } = useContactos(); 
+  const { items: itemsData } = useItems(); 
   const { searchConfig, handleSearch, filterData } = useSearch();
   const searchOptions = useSearchOptions(movimientos);
   
@@ -21,9 +26,7 @@ function Movimientos({ items, usuarios, contactos, documentos }) {
 
   const getFilteredData = () => {
     const { term, filters } = searchConfig;
-    // Se filtran los movimientos ya "joinados"
-    const filteredMovimientos = filterData(movimientos, term, filters);
-    return filteredMovimientos;
+    return filterData(movimientos, term, filters);
   };
 
   const getFechaHoraActual = () => {
@@ -36,6 +39,7 @@ function Movimientos({ items, usuarios, contactos, documentos }) {
       <div className="rounded-lg shadow-lg p-4 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
         <p className="text-sm text-gray-500 mb-4">{getFechaHoraActual()}</p>
+        
         <div className="flex justify-end mb-4">
           <Button
             variant="success"
@@ -64,10 +68,10 @@ function Movimientos({ items, usuarios, contactos, documentos }) {
       <MovimientoForm
         isOpen={isFormOpen}
         onClose={closeForm}
-        onGuardar={(movimientoData) => handleGuardarMovimiento(movimientoData)}
-        items={items}
+        onGuardar={handleGuardarMovimiento}
+        items={itemsData}
         usuarios={usuarios}
-        contactos={contactos}
+        contactos={contactosData}  
         documentos={documentos}
       />
     </div>
@@ -88,13 +92,6 @@ Movimientos.propTypes = {
       nombre: PropTypes.string.isRequired
     })
   ).isRequired,
-  contactos: PropTypes.arrayOf(
-    PropTypes.shape({
-      ID_contacto: PropTypes.number.isRequired,
-      nombre: PropTypes.string.isRequired,
-      tipo: PropTypes.string.isRequired
-    })
-  ).isRequired,
   documentos: PropTypes.arrayOf(
     PropTypes.shape({
       ID_documento: PropTypes.number.isRequired,
@@ -106,7 +103,6 @@ Movimientos.propTypes = {
 Movimientos.defaultProps = {
   items: [],
   usuarios: [],
-  contactos: [],
   documentos: []
 };
 

@@ -24,7 +24,6 @@ const getItems = async (req, res) => {
 const getItemsTipo = async (req, res) => {
   try {
     const { tipo } = req.params;
-    
     // Validar tipos permitidos
     const tiposValidos = ['materia-prima', 'producto-terminado'];
     if (!tiposValidos.includes(tipo)) {
@@ -49,7 +48,21 @@ const getItemsTipo = async (req, res) => {
   }
 };
 
+const getItemsMovimiento = async (req, res) => {
+  try {
+    // Realiza la consulta para obtener los ítems
+    const result = await pool.query('SELECT "id_item", "nombre", "tipo_item" FROM public.item');
+
+    // Devuelve los ítems formateados
+    res.status(200).json({ items: formatItems(result.rows) });
+  } catch (error) {
+    console.error('Error al obtener ítems de movimiento:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
 module.exports = {
   getItems,
-  getItemsTipo
+  getItemsTipo,
+  getItemsMovimiento
 };

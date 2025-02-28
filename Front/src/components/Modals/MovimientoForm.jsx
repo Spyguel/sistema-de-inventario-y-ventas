@@ -8,15 +8,17 @@ import Message from '../common/common/Messages/Message';
 function MovimientoForm({ 
     isOpen, 
     onClose, 
-    title, 
-    movimientoSeleccionado, 
     onGuardar, 
     items = [], 
     contactos = [], 
-    tipoActivo 
+    tipoActivo,
+    // Función que se invoca cuando se necesita obtener los ítems de un proveedor.
+    // Esta función debe retornar (o actualizar en el padre) la lista de ítems según el proveedor y el tipo de ítem.
+    fetchProviderItems 
 }) {
     const [formData, setFormData] = useState({
         id_usuario: '',       
+        tipo_item: '',        // Nuevo campo: "Materia Prima" o "Producto Terminado"
         selectedItem: '',     
         cantidad: '',
         tipo_contacto: '',
@@ -29,16 +31,17 @@ function MovimientoForm({
         observaciones: '',
         activo: true
     });
-
+    
+    // Estado para guardar los ítems filtrados según la selección de tipo_item
+    const [filteredItems, setFilteredItems] = useState([]);
     const [errors, setErrors] = useState({});
     const [messageModalOpen, setMessageModalOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success');
 
+    // Define el tipo de movimiento según la pestaña activa
     useEffect(() => {
-        if (movimientoSeleccionado) {
-            setFormData(movimientoSeleccionado);
-        } else if (tipoActivo) {
+        if (tipoActivo) {
             const tipoMap = {
                 'entrada': 'ENTRADA',
                 'salida': 'SALIDA',
@@ -49,7 +52,37 @@ function MovimientoForm({
                 tipo_mov: tipoMap[tipoActivo] || ''
             }));
         }
-    }, [movimientoSeleccionado, tipoActivo]);
+    }, [tipoActivo]);
+
+    // Cada vez que cambie el tipo de ítem o el contacto, actualizamos la lista de ítems a mostrar.
+    useEffect(() => {
+        // Si se seleccionó un tipo de ítem
+        if (formData.tipo_item) {
+            // Si el contacto seleccionado es de tipo "Proveedor", se consulta al backend.
+            const contactoSeleccionado = contactos.find(c => c.ID_contacto === formData.contacto);
+            if (contactoSeleccionado && contactoSeleccionado.tipo === 'Proveedor') {
+                // Llamamos a la función que nos trae los ítems que ese proveedor provee para el tipo indicado.
+                // Se espera que fetchProviderItems sea asíncrona.
+                (async () => {
+                    try {
+                        const provItems = await fetchProviderItems(contactoSeleccionado.ID_contacto, formData.tipo_item);
+                        setFilteredItems(provItems);
+                    } catch (error) {
+                        console.error('Error al obtener ítems del proveedor:', error);
+                        setFilteredItems([]);
+                    }
+                })();
+            } else {
+                // Si no es proveedor, filtramos los items recibidos desde el padre
+                const filt = items.filter(item => item.tipo_item === formData.tipo_item);
+                setFilteredItems(filt);
+            }
+            // Limpia el ítem seleccionado si se cambia el filtro
+            setFormData(prev => ({ ...prev, selectedItem: '' }));
+        } else {
+            setFilteredItems([]);
+        }
+    }, [formData.tipo_item, formData.contacto, items, contactos, fetchProviderItems]);
 
     const validateForm = () => {
         const newErrors = {};
@@ -57,6 +90,7 @@ function MovimientoForm({
         if (!formData.fecha) newErrors.fecha = 'La fecha es requerida';
         if (!formData.tipo_contacto) newErrors.tipo_contacto = 'El tipo de contacto es requerido';
         if (!formData.contacto) newErrors.contacto = 'El contacto es requerido';
+        if (!formData.tipo_item) newErrors.tipo_item = 'El tipo de item es requerido';
         if (!formData.selectedItem) newErrors.selectedItem = 'Debe seleccionar un item';
         if (!formData.cantidad) newErrors.cantidad = 'La cantidad es requerida';
         setErrors(newErrors);
@@ -66,6 +100,7 @@ function MovimientoForm({
     const resetForm = () => {
         setFormData({
             id_usuario: '',
+            tipo_item: '',
             selectedItem: '',
             cantidad: '',
             tipo_contacto: '',
@@ -79,6 +114,7 @@ function MovimientoForm({
             activo: true
         });
         setErrors({});
+        setFilteredItems([]);
     };
 
     const handleSubmit = (e) => {
@@ -98,22 +134,25 @@ function MovimientoForm({
 
     if (!isOpen) return null;
 
+    // Título fijo para el modal
+    const modalTitle = "Nuevo Movimiento";
+
     return (
         <>
             <FormModal
                 isOpen={isOpen}
                 onClose={() => { onClose(); resetForm(); }}
-                title={title}
-                wide={true}  // Si ya has modificado FormModal para aceptar wide, se mantiene
+                title={modalTitle}
+                wide={true}
             >
                 <Form
                     onSubmit={handleSubmit}
                     onCancel={() => { onClose(); resetForm(); }}
                     cancelText="Cancelar"
-                    submitText={movimientoSeleccionado ? 'Actualizar' : 'Crear'}
-                    columns={2} // Aquí definimos que el layout es de 2 columnas
+                    submitText="Crear"
+                    columns={2}
                 >
-                    {/* Campo: Tipo de Movimiento */}
+                    {/* Tipo de Movimiento */}
                     <div>
                         <label className="block text-sm font-medium mb-1">Tipo de Movimiento</label>
                         <select 
@@ -122,16 +161,17 @@ function MovimientoForm({
                             onChange={(e) => setFormData({ ...formData, tipo_mov: e.target.value })}
                         >
                             <option value="">Seleccione tipo</option>
-                            <option value="INGRESO">Compra</option>
-                            <option value="EGRESO">Venta</option>
+                            <option value="COMPRA">Compra</option>
+                            <option value="VENTA">Venta</option>
                             <option value="AJUSTE INVENTARIO">Ajuste Inventario</option>
                             <option value="PRODUCCION">Producción</option>
+                            <option value="TRASFERENCIA">Transferencia</option>
                             <option value="DEVOLUCION">Devolución</option>
                         </select>
                         {errors.tipo_mov && <p className="text-red-500 text-xs mt-1">{errors.tipo_mov}</p>}
                     </div>
 
-                    {/* Campo: Fecha */}
+                    {/* Fecha */}
                     <div>
                         <TextInput
                             label="Fecha"
@@ -143,7 +183,7 @@ function MovimientoForm({
                         />
                     </div>
 
-                    {/* Campo: Tipo de Contacto */}
+                    {/* Tipo de Contacto */}
                     <div>
                         <label className="block text-sm font-medium mb-1">Tipo de Contacto</label>
                         <select
@@ -158,27 +198,28 @@ function MovimientoForm({
                         {errors.tipo_contacto && <p className="text-red-500 text-xs mt-1">{errors.tipo_contacto}</p>}
                     </div>
 
-                    {/* Campo: Contacto */}
+                    {/* Contacto */}
                     <div>
                         <label className="block text-sm font-medium mb-1">Contacto</label>
                         <select
                             className="w-full px-3 py-2 border rounded-md"
                             value={formData.contacto || ''}
                             onChange={(e) => setFormData({ ...formData, contacto: e.target.value })}
+                            disabled={!formData.tipo_contacto}
                         >
                             <option value="">Seleccione contacto</option>
                             {contactos
-                                .filter(contacto => formData.tipo_contacto ? contacto.tipo === formData.tipo_contacto : true)
+                                .filter(contacto => formData.tipo_contacto ? contacto.tipo_contacto === formData.tipo_contacto : true)
                                 .map(contacto => (
                                     <option key={contacto.ID_contacto} value={contacto.ID_contacto}>
-                                        {contacto.nombre} ({contacto.tipo})
+                                        {contacto.nombre} ({contacto.tipo_contacto})
                                     </option>
                                 ))}
                         </select>
                         {errors.contacto && <p className="text-red-500 text-xs mt-1">{errors.contacto}</p>}
                     </div>
 
-                    {/* Campo: Documento */}
+                    {/* Documento */}
                     <div>
                         <label className="block text-sm font-medium mb-1">Documento</label>
                         <input 
@@ -188,16 +229,34 @@ function MovimientoForm({
                         />
                     </div>
 
-                    {/* Campo: Item */}
+                    {/* Tipo de Item */}
+                    <div>
+                        <label className="block text-sm font-medium mb-1">Tipo de Item</label>
+                        <select 
+                            className="w-full px-3 py-2 border rounded-md"
+                            value={formData.tipo_item || ''}
+                            onChange={(e) => setFormData({ ...formData, tipo_item: e.target.value })}
+                            required
+                        >
+                            <option value="">Seleccione tipo de item</option>
+                            <option value="Materia Prima">Materia Prima</option>
+                            <option value="Producto Terminado">Producto Terminado</option>
+                        </select>
+                        {errors.tipo_item && <p className="text-red-500 text-xs mt-1">{errors.tipo_item}</p>}
+                    </div>
+
+                    {/* Item (filtrado según tipo de item y, en caso de proveedor, consultado en backend) */}
                     <div>
                         <label className="block text-sm font-medium mb-1">Item</label>
                         <select 
                             className="w-full px-3 py-2 border rounded-md"
                             value={formData.selectedItem || ''}
                             onChange={(e) => setFormData({ ...formData, selectedItem: e.target.value })}
+                            disabled={!formData.tipo_item} 
+                            required
                         >
                             <option value="">Seleccione item</option>
-                            {items.map(item => (
+                            {filteredItems.map(item => (
                                 <option key={item.ID_item} value={item.ID_item}>
                                     {item.nombre}
                                 </option>
@@ -206,7 +265,7 @@ function MovimientoForm({
                         {errors.selectedItem && <p className="text-red-500 text-xs mt-1">{errors.selectedItem}</p>}
                     </div>
 
-                    {/* Campo: Cantidad */}
+                    {/* Cantidad */}
                     <div>
                         <TextInput
                             label="Cantidad"
@@ -219,7 +278,7 @@ function MovimientoForm({
                         />
                     </div>
 
-                    {/* Campo: Razón */}
+                    {/* Razón */}
                     <div>
                         <TextInput
                             label="Razón"
@@ -229,7 +288,7 @@ function MovimientoForm({
                         />
                     </div>
 
-                    {/* Campo: Detalle */}
+                    {/* Detalle */}
                     <div>
                         <TextInput
                             label="Detalle"
@@ -239,7 +298,7 @@ function MovimientoForm({
                         />
                     </div>
 
-                    {/* Campo: Observaciones */}
+                    {/* Observaciones */}
                     <div>
                         <TextInput
                             label="Observaciones"
@@ -264,13 +323,11 @@ function MovimientoForm({
 MovimientoForm.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    title: PropTypes.string.isRequired,
-    movimientoSeleccionado: PropTypes.object,
     onGuardar: PropTypes.func.isRequired,
     items: PropTypes.array,
     contactos: PropTypes.array,
-    documentos: PropTypes.array,
-    tipoActivo: PropTypes.string
+    tipoActivo: PropTypes.string,
+    fetchProviderItems: PropTypes.func.isRequired  // Función para obtener ítems por proveedor y tipo de item
 };
 
 export default MovimientoForm;
