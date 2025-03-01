@@ -9,10 +9,14 @@ const formatItems = (items) => {
   }));
 };
 
-// Obtener todos los ítems
+// Obtener todos los ítems ordenados por fecha de creación descendente
 const getItems = async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM public.item');
+    const result = await pool.query(`
+      SELECT * 
+      FROM public.item 
+      ORDER BY fecha_creacion ASC
+    `);
     res.status(200).json({ items: formatItems(result.rows) });
   } catch (error) {
     console.error('Error al obtener ítems:', error);
@@ -20,31 +24,30 @@ const getItems = async (req, res) => {
   }
 };
 
-// Obtener ítems por tipo
+// Obtener ítems por tipo ordenados por fecha de creación descendente
 const getItemsTipo = async (req, res) => {
   try {
     const { tipo } = req.params;
     
-    // Mapeo de URLs a valores en base de datos
     const mapTipos = {
       'materia-prima': 'Materia Prima',
       'producto-terminado': 'Producto Terminado',
       'insumo': 'Insumo'
     };
 
-    // Validar tipos permitidos
     const tiposValidos = Object.keys(mapTipos);
     if (!tiposValidos.includes(tipo)) {
       return res.status(400).json({ error: 'Tipo no válido' });
     }
 
-    // Obtener valor para la consulta SQL
     const tipoItem = mapTipos[tipo];
 
-    const result = await pool.query(
-      'SELECT * FROM public.item WHERE tipo_item = $1',
-      [tipoItem]
-    );
+    const result = await pool.query(`
+      SELECT * 
+      FROM public.item 
+      WHERE tipo_item = $1
+      ORDER BY fecha_creacion ASC
+    `, [tipoItem]);
 
     res.status(200).json({ items: formatItems(result.rows) });
     
