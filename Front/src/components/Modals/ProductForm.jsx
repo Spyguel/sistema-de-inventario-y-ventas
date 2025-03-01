@@ -4,12 +4,14 @@ import Button from '../common/button';
 
 const TipoItem = {
     MATERIA_PRIMA: 'Materia Prima',
-    PRODUCTO_TERMINADO: 'Producto Terminado'
+    PRODUCTO_TERMINADO: 'Producto Terminado',
+    INSUMO: 'Insumo'
 };
 
 const Subcategorias = {
     'Materia Prima': ['Agua', 'Espumante', 'Colorante', 'Sulfato de sodio'],
-    'Producto Terminado': ['Suavizante', 'Shampoo', 'Acondicionador', 'Envases', 'Tapas']
+    'Producto Terminado': ['Suavizante', 'Shampoo', 'Acondicionador'],
+    'Insumo': ['Envases', 'Tapas']
 };
 
 const ProductForm = ({ 
@@ -45,7 +47,7 @@ const ProductForm = ({
                 cantidadMinima: productoSeleccionado.cantidad_minima || 0,
                 cantidadActual: productoSeleccionado.cantidad_actual || 0,
                 fechaCreacion: fechaExistente.toISOString().split('T')[0],
-                activo: productoSeleccionado.activo || true
+                activo: productoSeleccionado?.activo ?? true
             });
         } else {
             setProducto({
@@ -185,7 +187,7 @@ const ProductForm = ({
                     {producto.tipoItem && (
                         <div className="space-y-2">
                             <label className="block text-sm font-medium text-gray-700">
-                                Seleccione el producto
+                                {producto.tipoItem === 'Insumo' ? 'Tipo de Insumo' : 'Seleccione el producto'}
                             </label>
                             <select
                                 name="categoria"
@@ -322,7 +324,7 @@ ProductForm.propTypes = {
         cantidad_minima: PropTypes.number,
         cantidad_actual: PropTypes.number,
         fecha_creacion: PropTypes.string,
-        activo: PropTypes.bool //FALTA CORREGIR NO IMPACTA EN LA BASE DE DATOS
+        activo: PropTypes.bool
     })
 };
 

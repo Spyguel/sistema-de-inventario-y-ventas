@@ -11,41 +11,47 @@ const ProductTable = ({
   requestSort = () => {} 
 }) => {
   const [productos, setProductos] = useState([]);
-  const [tipoFiltro, setTipoFiltro] = useState(null); // Estado para el filtro
-  const [cargando, setCargando] = useState(false); // Estado para manejar la carga
-  const [error, setError] = useState(null); // Estado para manejar errores
+  const [tipoFiltro, setTipoFiltro] = useState(''); 
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Función para obtener los ítems desde el backend
   const obtenerItems = async () => {
     setCargando(true);
     setError(null);
 
     try {
-      // Construir la URL con el filtro si existe
-      const url = tipoFiltro 
-        ? `http://localhost:3000/items?tipo=${tipoFiltro}`
-        : 'http://localhost:3000/items';
+      const tiposUrl = {
+        'Materia Prima': 'materia-prima',
+        'Producto Terminado': 'producto-terminado',
+        'Insumo': 'insumo'
+      };
+
+      let url = 'http://localhost:3000/items';
+      if (tipoFiltro && tiposUrl[tipoFiltro]) {
+        url = `http://localhost:3000/items/tipo/${tiposUrl[tipoFiltro]}`;
+      }
 
       const response = await fetch(url);
+      
       if (!response.ok) {
-        throw new Error('Error al obtener los ítems');
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+      
       const data = await response.json();
-      setProductos(data.items); // Actualizar el estado con los ítems
+      setProductos(data.items || []);
+
     } catch (error) {
-      console.error('Error al obtener los ítems:', error);
-      setError('No se pudieron cargar los ítems. Inténtalo de nuevo más tarde.');
+      console.error('Error al obtener ítems:', error);
+      setError(error.message);
     } finally {
       setCargando(false);
     }
   };
 
-  // Cargar los ítems al montar el componente o cuando cambie el filtro
   useEffect(() => {
     obtenerItems();
   }, [tipoFiltro]);
 
-  // Definir las columnas de la tabla
   const headers = [
     { key: 'id_item', label: 'ID' },
     { key: 'unidad_medida', label: 'Unidad' },
@@ -53,11 +59,10 @@ const ProductTable = ({
     { key: 'tipo_item', label: 'Tipo' },
     { key: 'cantidad_actual', label: 'Cantidad Actual' },
     { key: 'cantidad_minima', label: 'Cantidad Mínima' },
-    { key: 'fecha_creacion', label: 'Fecha de Creación' }, // La fecha ya está formateada en el backend
-    { key: 'activo', label: 'Activo' }, // El estado ya está formateado en el backend
+    { key: 'fecha_creacion', label: 'Fecha de Creación' },
+    { key: 'activo', label: 'Activo' },
   ];
 
-  // Renderizar las acciones para cada fila
   const renderActions = (producto) => (
     <div className="flex gap-2">
       <Button 
@@ -94,36 +99,34 @@ const ProductTable = ({
 
   return (
     <div>
-      {/* Selector de filtro */}
+      {/* Selector de filtro actualizado */}
       <div className="mb-4 flex items-center gap-4">
         <label htmlFor="tipoFiltro" className="text-sm font-medium text-gray-700">Filtrar por tipo:</label>
         <select 
           id="tipoFiltro" 
-          value={tipoFiltro || ''} 
-          onChange={(e) => setTipoFiltro(e.target.value || null)}
+          value={tipoFiltro} 
+          onChange={(e) => setTipoFiltro(e.target.value || '')}
           className="p-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Todos</option>
-          <option value="materia-prima">Materia Prima</option>
-          <option value="producto-terminado">Producto Terminado</option>
+          <option value="Materia Prima">Materia Prima</option>
+          <option value="Producto Terminado">Producto Terminado</option>
+          <option value="Insumo">Insumo</option> {/* Opción corregida */}
         </select>
       </div>
 
-      {/* Mensaje de carga */}
       {cargando && (
         <div className="flex justify-center items-center p-4">
           <p className="text-gray-600">Cargando ítems...</p>
         </div>
       )}
 
-      {/* Mensaje de error */}
       {error && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
           <p className="text-red-700">{error}</p>
         </div>
       )}
 
-      {/* Tabla de productos */}
       {!cargando && !error && (
         <Tabla 
           headers={headers}

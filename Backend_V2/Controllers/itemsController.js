@@ -24,16 +24,22 @@ const getItems = async (req, res) => {
 const getItemsTipo = async (req, res) => {
   try {
     const { tipo } = req.params;
+    
+    // Mapeo de URLs a valores en base de datos
+    const mapTipos = {
+      'materia-prima': 'Materia Prima',
+      'producto-terminado': 'Producto Terminado',
+      'insumo': 'Insumo'
+    };
+
     // Validar tipos permitidos
-    const tiposValidos = ['materia-prima', 'producto-terminado'];
+    const tiposValidos = Object.keys(mapTipos);
     if (!tiposValidos.includes(tipo)) {
-      return res.status(400).json({ error: 'Tipo de ítem no válido' });
+      return res.status(400).json({ error: 'Tipo no válido' });
     }
 
-    // Mapear parámetro a valor de base de datos
-    const tipoItem = tipo === 'materia-prima' 
-      ? 'Materia Prima' 
-      : 'Producto Terminado';
+    // Obtener valor para la consulta SQL
+    const tipoItem = mapTipos[tipo];
 
     const result = await pool.query(
       'SELECT * FROM public.item WHERE tipo_item = $1',
@@ -69,21 +75,11 @@ const createItem = async (req, res) => {
       nombre, 
       tipo_item, 
       cantidad_actual, 
-      cantidad_minima 
+      cantidad_minima,
+      activo // <- Añadir este campo
     } = req.body;
 
-    // Validación de campos obligatorios (sin activo)
-    if (!unidad_medida || !nombre || !tipo_item || cantidad_actual === undefined || cantidad_minima === undefined) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
-    }
-
-    // Validar tipo de ítem
-    const tiposValidos = ['Materia Prima', 'Producto Terminado'];
-    if (!tiposValidos.includes(tipo_item)) {
-      return res.status(400).json({ error: 'Tipo de ítem no válido' });
-    }
-
-    // Insertar con activo siempre en true
+    // Añadir 'activo' a la consulta SQL (6to parámetro)
     const result = await pool.query(
       `INSERT INTO public.item (
         unidad_medida, 
@@ -93,28 +89,24 @@ const createItem = async (req, res) => {
         cantidad_minima, 
         activo,
         fecha_creacion
-      ) VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP) 
+      ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) 
       RETURNING *`,
       [
         unidad_medida,
         nombre,
         tipo_item,
         cantidad_actual,
-        cantidad_minima
+        cantidad_minima,
+        activo
       ]
     );
 
-    const newItem = formatItems(result.rows)[0];
-    res.status(201).json(newItem);
-
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error al crear ítem:', error);
-    res.status(500).json({ 
-      error: error.message.includes('duplicate key') 
-        ? 'El ítem ya existe' 
-        : 'Error interno del servidor' 
-    });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
+
 };
 
 module.exports = {

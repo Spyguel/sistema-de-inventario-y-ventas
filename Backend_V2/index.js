@@ -68,7 +68,7 @@ app.get('/contacto_movimiento',getContactosMovimiento);
 // Se elimina la duplicidad. Conservamos una sola definición de GET /items
 
 app.get('/items', getItems );
-app.get('/items/:tipo', getItemsTipo);
+app.get('/items/tipo/:tipo', getItemsTipo);
 app.get('/items_movimiento', getItemsMovimiento);
 app.post('/items', createItem);
 
