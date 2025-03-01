@@ -6,7 +6,7 @@ const cors = require('cors');
 const { register, login} = require('./Routes/auth.routes');
 const { usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
 const { contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem, getContactosMovimiento } = require('./Controllers/ContactController');
-const { getItems, getItemsTipo, getItemsMovimiento } = require('./Controllers/itemsController');
+const { getItems, getItemsTipo, getItemsMovimiento, insertarItem, createItem } = require('./Controllers/itemsController');
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
@@ -70,6 +70,7 @@ app.get('/contacto_movimiento',getContactosMovimiento);
 app.get('/items', getItems );
 app.get('/items/:tipo', getItemsTipo);
 app.get('/items_movimiento', getItemsMovimiento);
+app.post('/items', createItem);
 
 // ─── RUTAS ROL ─────────────────────────────────────────────
 

@@ -61,8 +61,65 @@ const getItemsMovimiento = async (req, res) => {
   }
 };
 
+// Crear nuevo ítem (versión final simplificada)
+const createItem = async (req, res) => {
+  try {
+    const { 
+      unidad_medida, 
+      nombre, 
+      tipo_item, 
+      cantidad_actual, 
+      cantidad_minima 
+    } = req.body;
+
+    // Validación de campos obligatorios (sin activo)
+    if (!unidad_medida || !nombre || !tipo_item || cantidad_actual === undefined || cantidad_minima === undefined) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    // Validar tipo de ítem
+    const tiposValidos = ['Materia Prima', 'Producto Terminado'];
+    if (!tiposValidos.includes(tipo_item)) {
+      return res.status(400).json({ error: 'Tipo de ítem no válido' });
+    }
+
+    // Insertar con activo siempre en true
+    const result = await pool.query(
+      `INSERT INTO public.item (
+        unidad_medida, 
+        nombre, 
+        tipo_item, 
+        cantidad_actual, 
+        cantidad_minima, 
+        activo,
+        fecha_creacion
+      ) VALUES ($1, $2, $3, $4, $5, true, CURRENT_TIMESTAMP) 
+      RETURNING *`,
+      [
+        unidad_medida,
+        nombre,
+        tipo_item,
+        cantidad_actual,
+        cantidad_minima
+      ]
+    );
+
+    const newItem = formatItems(result.rows)[0];
+    res.status(201).json(newItem);
+
+  } catch (error) {
+    console.error('Error al crear ítem:', error);
+    res.status(500).json({ 
+      error: error.message.includes('duplicate key') 
+        ? 'El ítem ya existe' 
+        : 'Error interno del servidor' 
+    });
+  }
+};
+
 module.exports = {
   getItems,
   getItemsTipo,
-  getItemsMovimiento
+  getItemsMovimiento,
+  createItem
 };
