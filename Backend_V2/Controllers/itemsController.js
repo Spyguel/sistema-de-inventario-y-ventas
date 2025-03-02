@@ -50,10 +50,9 @@ const getItemsTipo = async (req, res) => {
 
 const getItemsMovimiento = async (req, res) => {
   try {
-    // Realiza la consulta para obtener los ítems
-    const result = await pool.query('SELECT "id_item", "nombre", "tipo_item" FROM public.item');
-
-    // Devuelve los ítems formateados
+    const result = await pool.query(
+      'SELECT "id_item", "nombre", "tipo_item", "fecha_creacion", "activo" FROM public.item'
+    );
     res.status(200).json({ items: formatItems(result.rows) });
   } catch (error) {
     console.error('Error al obtener ítems de movimiento:', error);
