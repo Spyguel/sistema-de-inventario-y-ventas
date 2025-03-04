@@ -10,7 +10,7 @@ const ProductTable = ({
   onToggleActive,
   requestSort = () => {} 
 }) => {
-  // Mapeo de los productos para adecuarlos al formato de la tabla.
+  // Mapea los productos para adecuarlos al formato de la tabla
   const mappedProductos = productos.map(producto => ({
     id_item: producto.id_item,
     unidad_medida: producto.unidad_medida,
@@ -22,7 +22,6 @@ const ProductTable = ({
     activo: producto.activo,
   }));
 
-  // Función para renderizar las acciones de cada fila.
   const renderActions = (producto) => (
     <div className="flex gap-2">
       <Button 
@@ -58,7 +57,6 @@ const ProductTable = ({
     </div>
   );
 
-  // Definición de encabezados para la tabla.
   const headers = [
     { key: 'id_item', label: 'ID' },
     { key: 'unidad_medida', label: 'Unidad' },

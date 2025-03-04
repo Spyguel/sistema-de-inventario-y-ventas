@@ -2,31 +2,32 @@ import { useState } from 'react';
 import Button from '../components/common/button.jsx';
 import ProductTable from '../components/Tablas/ProductTable';
 import ProductForm from '../components/Modals/ProductForm';
+import ProductComponentForm from '../components/Modals/ProductComponentForm.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda';
 import useFetchProductos from '../hooks/useFetchItems.js';
 
 function Productos() {
-  // Obtiene productos desde la base de datos mediante el hook
   const { 
     productos, 
     loading, 
     error, 
     handleGuardarProducto, 
-    handleEliminarProducto, 
-    handleToggleActive 
+    handleToggleActive,
+    handleConfirmAddComponent 
   } = useFetchProductos();
 
   const [modalAbierto, setModalAbierto] = useState(false);
   const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [componentModalOpen, setComponentModalOpen] = useState(false);
+  const [productForComponent, setProductForComponent] = useState(null);
 
-  // Filtrado de productos basado en el término de búsqueda
   const productosFiltrados = productos.filter(producto => {
     return (
       producto.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      producto.tipoItem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      producto.unidadMedida.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      producto.id.toString().includes(searchTerm)
+      producto.tipo_item.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.unidad_medida.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      producto.id_item.toString().includes(searchTerm)
     );
   });
 
@@ -39,14 +40,15 @@ function Productos() {
     setModalAbierto(true);
   };
 
-  const handleGuardar = (producto) => {
-    handleGuardarProducto(producto);
-    setModalAbierto(false);
-    setProductoSeleccionado(null);
+  const handleAddComponent = (producto) => {
+    setProductForComponent(producto);
+    setComponentModalOpen(true);
   };
 
-  const handleDelete = (id) => {
-    handleEliminarProducto(id);
+  const handleGuardar = async (productoData) => {
+    await handleGuardarProducto(productoData);
+    setModalAbierto(false);
+    setProductoSeleccionado(null);
   };
 
   const handleToggle = (id) => {
@@ -57,9 +59,9 @@ function Productos() {
     <div className="h-[100%] ml-10 p-4">
       <div className="rounded-lg shadow-lg p-6 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
-        <p className="text-sm text-gray-500 mb-4">Administra los productos y materias primas</p>
-
-        {/* Botón Agregar */}
+        <p className="text-sm text-gray-500 mb-4">
+          Administra los productos y materias primas
+        </p>
         <div className="flex justify-end mb-4">
           <Button 
             onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }} 
@@ -69,14 +71,7 @@ function Productos() {
             + Agregar Producto
           </Button>
         </div>
-
-        {/* Barra de Búsqueda */}
-        <BarraBusqueda
-          onSearch={handleSearch}
-          placeholder="Buscar productos..."
-        />
-
-        {/* Tabla de Productos */}
+        <BarraBusqueda onSearch={handleSearch} placeholder="Buscar productos..." />
         <div className="mt-4 flex-1 overflow-auto">
           {loading ? (
             <p>Cargando productos...</p>
@@ -86,24 +81,29 @@ function Productos() {
             <ProductTable 
               productos={productosFiltrados} 
               onEdit={handleEditarProducto}
-              onDelete={handleDelete}
+              onAddComponent={handleAddComponent} 
               onToggleActive={handleToggle}
             />
           )}
         </div>
       </div>
 
-      {/* Modal para Agregar/Editar Productos */}
       <ProductForm 
         isOpen={modalAbierto} 
-        onClose={() => { 
-          setModalAbierto(false);
-          setProductoSeleccionado(null);
-        }}
+        onClose={() => { setModalAbierto(false); setProductoSeleccionado(null); }}
         title={productoSeleccionado ? "Editar Producto" : "Agregar Nuevo Producto"}
         productoSeleccionado={productoSeleccionado}
         onGuardar={handleGuardar}
       />
+
+      {componentModalOpen && productForComponent && (
+        <ProductComponentForm 
+          isOpen={componentModalOpen}
+          onClose={() => { setComponentModalOpen(false); setProductForComponent(null); }}
+          product={productForComponent}
+          onAddComponent={handleConfirmAddComponent}
+        />
+      )}
     </div>
   );
 }
