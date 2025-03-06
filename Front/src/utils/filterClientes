@@ -1,0 +1,13 @@
+// utils/filterClientes.js
+export const getFilteredClientesData = (clientes, searchConfig, filterData) => {
+  const { term, filters } = searchConfig;
+  // Filtrar solo aquellos contactos cuyo tipo sea "Proveedor"
+  const clientesData = clientes.filter(contacto => contacto.tipo_contacto === "Cliente");
+  const filteredData = filterData(clientesData, term, filters);
+
+  // Convertir el campo 'activo' a 'Activo' o 'Inactivo'
+  return filteredData.map(proveedor => ({
+    ...proveedor,
+    activo: proveedor.activo ? 'Activo' : 'Inactivo'
+  }));
+};

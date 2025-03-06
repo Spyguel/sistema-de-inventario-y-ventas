@@ -299,6 +299,17 @@ const getComposersByItem = async (req, res) => {
   }
 };
 
+const getItemsProveedor = async (req, res) => {
+  try{
+    const result = await pool.query('SELECT "id_item", "nombre" FROM public.item WHERE activo = true');
+  
+    res.status(200).json({ items: result.rows });
+  }
+  catch (error) {
+    console.error('Error al obtener ítems:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+}
 
 
 module.exports = {
@@ -310,5 +321,6 @@ module.exports = {
   toggleItemStatus,
   getMateriaPrimaActivos,
   createOrUpdateComposition,
-  getComposersByItem
+  getComposersByItem,
+  getItemsProveedor
 };

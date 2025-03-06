@@ -12,19 +12,17 @@ function MovimientoForm({
     items = [], 
     contactos = [], 
     tipoActivo,
-    // Función que se invoca cuando se necesita obtener los ítems de un proveedor.
-    // Esta función debe retornar (o actualizar en el padre) la lista de ítems según el proveedor y el tipo de ítem.
     fetchProviderItems 
 }) {
     const [formData, setFormData] = useState({
         id_usuario: '',       
-        tipo_item: '',        // Nuevo campo: "Materia Prima" o "Producto Terminado"
+        tipo_item: '',    
         selectedItem: '',     
         cantidad: '',
         tipo_contacto: '',
         contacto: '',
         documento: '',
-        fecha: '',        
+        fecha: new Date().toISOString().split('T')[0],        
         tipo_mov: '',
         razon: '',
         detalle: '',
@@ -39,7 +37,12 @@ function MovimientoForm({
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState('success');
 
-    // Define el tipo de movimiento según la pestaña activa
+    useEffect(() => {
+        const hoy = new Date();
+        const fechaHoy = hoy.toISOString().split('T')[0]; // obtiene la fecha en formato YYYY-MM-DD
+        setFormData(prev => ({ ...prev, fecha: fechaHoy }));
+      }, []);
+
     useEffect(() => {
         if (tipoActivo) {
             const tipoMap = {
@@ -54,15 +57,11 @@ function MovimientoForm({
         }
     }, [tipoActivo]);
 
-    // Cada vez que cambie el tipo de ítem o el contacto, actualizamos la lista de ítems a mostrar.
     useEffect(() => {
         // Si se seleccionó un tipo de ítem
         if (formData.tipo_item) {
-            // Si el contacto seleccionado es de tipo "Proveedor", se consulta al backend.
             const contactoSeleccionado = contactos.find(c => c.ID_contacto === formData.contacto);
             if (contactoSeleccionado && contactoSeleccionado.tipo === 'Proveedor') {
-                // Llamamos a la función que nos trae los ítems que ese proveedor provee para el tipo indicado.
-                // Se espera que fetchProviderItems sea asíncrona.
                 (async () => {
                     try {
                         const provItems = await fetchProviderItems(contactoSeleccionado.ID_contacto, formData.tipo_item);
@@ -161,12 +160,10 @@ function MovimientoForm({
                             onChange={(e) => setFormData({ ...formData, tipo_mov: e.target.value })}
                         >
                             <option value="">Seleccione tipo</option>
-                            <option value="COMPRA">Compra</option>
-                            <option value="VENTA">Venta</option>
+                            <option value="ENTRADA">ENTRADA</option>
+                            <option value="SALIDA">SALIDA</option>
                             <option value="AJUSTE INVENTARIO">Ajuste Inventario</option>
-                            <option value="PRODUCCION">Producción</option>
-                            <option value="TRASFERENCIA">Transferencia</option>
-                            <option value="DEVOLUCION">Devolución</option>
+                            <option value="DEVOLUCION">Ajuste por devolución</option>
                         </select>
                         {errors.tipo_mov && <p className="text-red-500 text-xs mt-1">{errors.tipo_mov}</p>}
                     </div>
@@ -177,7 +174,7 @@ function MovimientoForm({
                             label="Fecha"
                             name="fecha"
                             type="date"
-                            value={formData.fecha || ''}
+                            value={formData.fecha || ''} 
                             onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
                             error={errors.fecha}
                         />
