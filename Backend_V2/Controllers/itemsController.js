@@ -9,14 +9,10 @@ const formatItems = (items) => {
   }));
 };
 
-// Obtener todos los ítems ordenados por fecha de creación descendente
+// Obtener todos los ítems
 const getItems = async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT * 
-      FROM public.item 
-      ORDER BY fecha_creacion ASC
-    `);
+    const result = await pool.query('SELECT * FROM public.item');
     res.status(200).json({ items: formatItems(result.rows) });
   } catch (error) {
     console.error('Error al obtener ítems:', error);
@@ -24,30 +20,25 @@ const getItems = async (req, res) => {
   }
 };
 
-// Obtener ítems por tipo ordenados por fecha de creación descendente
+// Obtener ítems por tipo
 const getItemsTipo = async (req, res) => {
   try {
     const { tipo } = req.params;
-    
-    const mapTipos = {
-      'materia-prima': 'Materia Prima',
-      'producto-terminado': 'Producto Terminado',
-      'insumo': 'Insumo'
-    };
-
-    const tiposValidos = Object.keys(mapTipos);
+    // Validar tipos permitidos
+    const tiposValidos = ['materia-prima', 'producto-terminado'];
     if (!tiposValidos.includes(tipo)) {
-      return res.status(400).json({ error: 'Tipo no válido' });
+      return res.status(400).json({ error: 'Tipo de ítem no válido' });
     }
 
-    const tipoItem = mapTipos[tipo];
+    // Mapear parámetro a valor de base de datos
+    const tipoItem = tipo === 'materia-prima' 
+      ? 'Materia Prima' 
+      : 'Producto Terminado';
 
-    const result = await pool.query(`
-      SELECT * 
-      FROM public.item 
-      WHERE tipo_item = $1
-      ORDER BY fecha_creacion ASC
-    `, [tipoItem]);
+    const result = await pool.query(
+      'SELECT * FROM public.item WHERE tipo_item = $1',
+      [tipoItem]
+    );
 
     res.status(200).json({ items: formatItems(result.rows) });
     
@@ -70,29 +61,6 @@ const getItemsMovimiento = async (req, res) => {
 // Crear nuevo ítem 
 const createItem = async (req, res) => {
   try {
-<<<<<<< HEAD
-    const { 
-      unidad_medida, 
-      nombre, 
-      tipo_item, 
-      cantidad_actual, 
-      cantidad_minima,
-      activo // <- Añadir este campo
-    } = req.body;
-
-    // Añadir 'activo' a la consulta SQL (6to parámetro)
-    const result = await pool.query(
-      `INSERT INTO public.item (
-        unidad_medida, 
-        nombre, 
-        tipo_item, 
-        cantidad_actual, 
-        cantidad_minima, 
-        activo,
-        fecha_creacion
-      ) VALUES ($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) 
-      RETURNING *`,
-=======
     const { unidad_medida, nombre, tipo_item, cantidad_minima } = req.body;
 
     // Validación de campos obligatorios (se elimina cantidad_actual, se asigna 0 por defecto)
@@ -111,27 +79,25 @@ const createItem = async (req, res) => {
       `INSERT INTO public.item (unidad_medida, nombre, tipo_item, cantidad_actual, cantidad_minima, activo, fecha_creacion) 
        VALUES ($1, $2, $3, 0, $4, true, CURRENT_TIMESTAMP) 
        RETURNING *`,
->>>>>>> b7cb227f83da2531a1a7c100093f24f742132b31
       [
         unidad_medida,
         nombre,
         tipo_item,
-<<<<<<< HEAD
-        cantidad_actual,
-        cantidad_minima,
-        activo
-=======
         cantidad_minima
->>>>>>> b7cb227f83da2531a1a7c100093f24f742132b31
       ]
     );
 
-    res.status(201).json(result.rows[0]);
+    const newItem = formatItems(result.rows)[0];
+    res.status(201).json(newItem);
+
   } catch (error) {
     console.error('Error al crear ítem:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    res.status(500).json({ 
+      error: error.message.includes('duplicate key') 
+        ? 'El ítem ya existe' 
+        : 'Error interno del servidor' 
+    });
   }
-
 };
 
 // Actualizar un ítem existente

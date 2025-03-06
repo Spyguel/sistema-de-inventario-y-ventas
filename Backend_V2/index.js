@@ -67,7 +67,7 @@ app.get('/contacto_movimiento',getContactosMovimiento);
 // ─── RUTAS ITEM ─────────────────────────────────────────────
 
 app.get('/items', getItems );
-app.get('/items/tipo/:tipo', getItemsTipo);
+app.get('/items/:tipo', getItemsTipo);
 app.get('/items_movimiento', getItemsMovimiento);
 app.post('/items', createItem);
 app.put('/items/:id', updateItem);
