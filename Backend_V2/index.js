@@ -6,7 +6,7 @@ const cors = require('cors');
 const { register, login} = require('./Routes/auth.routes');
 const { usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
 const { contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem, getContactosMovimiento } = require('./Controllers/ContactController');
-const { getItems, getItemsTipo, getItemsMovimiento, insertarItem, createItem } = require('./Controllers/itemsController');
+const { getItems, getItemsTipo, getItemsMovimiento, createItem, updateItem, toggleItemStatus, getMateriaPrimaActivos, createOrUpdateComposition, getComposersByItem} = require('./Controllers/itemsController');
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
@@ -65,12 +65,16 @@ app.get('/contacto_item',getcontactoItem);
 app.get('/contacto_movimiento',getContactosMovimiento);
 
 // ─── RUTAS ITEM ─────────────────────────────────────────────
-// Se elimina la duplicidad. Conservamos una sola definición de GET /items
 
 app.get('/items', getItems );
 app.get('/items/tipo/:tipo', getItemsTipo);
 app.get('/items_movimiento', getItemsMovimiento);
 app.post('/items', createItem);
+app.put('/items/:id', updateItem);
+app.put('/items/:id/toggle', toggleItemStatus);
+app.get('/items/materia-prima-activos', getMateriaPrimaActivos);
+app.post('/composicion_item', createOrUpdateComposition);
+app.get('/item_composicion/:id', getComposersByItem);
 
 // ─── RUTAS ROL ─────────────────────────────────────────────
 
