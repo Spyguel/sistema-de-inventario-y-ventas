@@ -3,42 +3,53 @@ import ProveedoresTable from '../components/Tablas/ProveedoresTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 import ProveedorForm from '../components/Modals/ProveedorForm.jsx';
 import useSearch from '../hooks/useSearch';
-import useFetchProveedores from '../hooks/useFetchContacto.js';
+import useFetchContacto from '../hooks/useFetchContacto.js';
 import useModals from '../hooks/useModals';
 import useItems from '../hooks/useItems'; 
 import useContactoItem from '../hooks/useContactoItem';
 import { getFilteredProveedoresData } from '../utils/filterProveedores';
+import Message from '../components/common/common/Messages/Message.jsx';
 
 function Proveedores() {
-  const { clientes: proveedores, fetchClientes: fetchProveedores, handleGuardarContacto, handleEliminarProveedor, handleToggleEstado } = useFetchProveedores();
+  const { 
+    clientes: proveedores, 
+    fetchClientes: fetchProveedores, 
+    handleGuardarContacto, 
+    handleEliminarProveedor, 
+    handleToggleEstado,
+    message,
+    closeMessage
+  } = useFetchContacto();
+
   const { searchConfig, handleSearch, filterData } = useSearch();
   const { modals, selectedItems, setSelectedItems, handleOpenModal, handleCloseModal, handleAddButton } = useModals();
   const { items, fetchItemProveedor } = useItems(); 
-  const { handleGuardarContactoItem } = useContactoItem();
+  const { handleGuardarContactoItem, getContactoItemsByContacto } = useContactoItem();
 
-  // Filtrado de proveedores mediante helper
   const filteredProveedores = getFilteredProveedoresData(proveedores, searchConfig, filterData);
 
-  // Función que se invoca cuando el formulario de ítems envía datos
   const handleAsignarItems = async (id_proveedor, selectedItemsArr) => {
-    console.log('Ítems recibidos en handleAsignarItems:', selectedItemsArr); 
-    
     try {
       const promises = selectedItemsArr.map(async (id_item) => {
-        // Verificar si la relación ya existe
         const response = await handleGuardarContactoItem({ id_contacto: id_proveedor, id_item });
-
         if (!response) {
           throw new Error(`Error al asignar ítem con ID ${id_item} al proveedor con ID ${id_proveedor}`);
         }
       });
 
       await Promise.all(promises);
-
-      // Aquí puedes actualizar el estado o mostrar un mensaje de éxito
-      console.log('Ítems asignados correctamente al proveedor', id_proveedor);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleObtenerItemsProveedor = async (id_proveedor) => {
+    try {
+      const itemsAsociados = await getContactoItemsByContacto(id_proveedor);
+      return itemsAsociados;
+    } catch (error) {
+      console.error('Error al obtener ítems asociados:', error);
+      return [];
     }
   };
 
@@ -68,14 +79,15 @@ function Proveedores() {
           <ProveedoresTable
             proveedores={filteredProveedores}
             items={items}
-            fetchItemProveedor={fetchItemProveedor}  // Función para refrescar los ítems de proveedor
-            onGuardarItems={handleAsignarItems}       // Función que se encargará de asignar los ítems (usa useContactoItem)
+            fetchItemProveedor={fetchItemProveedor}
+            onGuardarItems={handleAsignarItems}
             onEdit={(proveedor) => {
               setSelectedItems(prev => ({ ...prev, proveedor }));
               handleOpenModal('proveedor');
             }}
             onDelete={(id) => handleEliminarProveedor(id, fetchProveedores)}
             onToggleEstado={(id) => handleToggleEstado(id, proveedores, fetchProveedores)}
+            onObtenerItemsProveedor={handleObtenerItemsProveedor}
           />
         </div>
       </div>
@@ -89,6 +101,14 @@ function Proveedores() {
           onGuardar={(nuevoProveedor) => handleGuardarContacto(nuevoProveedor, selectedItems, handleCloseModal, fetchProveedores)}
         />
       )}
+
+      {/* Renderizar el componente Message */}
+      <Message
+        isOpen={message.isOpen}
+        onClose={closeMessage}
+        message={message.text}
+        type={message.type}
+      />
     </div>
   );
 }

@@ -1,9 +1,8 @@
-// components/Tablas/ProveedoresTable.jsx
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from '../common/button.jsx';
 import Tabla from '../common/Tabla.jsx';
-import { PencilIcon } from '@heroicons/react/24/solid';
+import { PencilIcon, ListBulletIcon } from '@heroicons/react/24/solid';
 import ProveedorItemForm from '../Modals/ProveedorItemForm.jsx';
 
 const ProveedoresTable = ({ 
@@ -13,16 +12,30 @@ const ProveedoresTable = ({
     onEdit,  
     onDelete,
     requestSort = () => {},
-    onGuardarItems  // Nueva prop para asignar ítems
+    onGuardarItems,  // Prop para asignar ítems
+    onObtenerItemsProveedor // Nueva prop para obtener ítems asociados
 }) => {
     const [selectedProveedorItem, setSelectedProveedorItem] = useState(null);
     const [showProveedorItemModal, setShowProveedorItemModal] = useState(false);
+    const [itemsAsociados, setItemsAsociados] = useState([]); // Estado para almacenar los ítems asociados
 
     // Al hacer clic, refrescamos los ítems desde la base de datos y abrimos el modal
-    const handleProveedorItem = (proveedor) => {
+    const handleProveedorItem = async (proveedor) => {
+        console.log('Proveedor seleccionado:', proveedor); // Verificar el proveedor seleccionado
+
         if (fetchItemProveedor) {
+          console.log('Refrescando ítems desde la base de datos...'); // Verificar si se llama a fetchItemProveedor
           fetchItemProveedor();
         }
+
+        // Obtener los ítems asociados al proveedor seleccionado
+        if (onObtenerItemsProveedor) {
+            console.log('Obteniendo ítems asociados para el proveedor:', proveedor.id_contacto); // Verificar el ID del proveedor
+            const itemsAsociados = await onObtenerItemsProveedor(proveedor.id_contacto);
+            console.log('Ítems asociados obtenidos:', itemsAsociados); // Verificar los ítems asociados
+            setItemsAsociados(itemsAsociados); // Guardar los ítems asociados en el estado
+        }
+
         setSelectedProveedorItem(proveedor);
         setShowProveedorItemModal(true);
     };
@@ -55,9 +68,7 @@ const ProveedoresTable = ({
                 size="sm"
                 className={`${proveedor.activo ? 'bg-yellow-500' : 'bg-green-500'} text-white rounded hover:${proveedor.activo ? 'bg-yellow-600' : 'bg-green-600'}`}
             >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+                <ListBulletIcon className="h-4 w-4" />
             </Button>
 
             <Button 
@@ -87,11 +98,13 @@ const ProveedoresTable = ({
                     onClose={() => setShowProveedorItemModal(false)}
                     // Aquí se delega la asignación de ítems al callback recibido
                     onGuardar={(nuevoItem) => {
+                      console.log('Guardando nuevos ítems:', nuevoItem); // Verificar los ítems que se están guardando
                       onGuardarItems(selectedProveedorItem.id_contacto, nuevoItem);
                       setShowProveedorItemModal(false);
                     }}
                     proveedorSeleccionado={selectedProveedorItem}
                     items={items}
+                    itemsAsociados={itemsAsociados} // Pasar los ítems asociados al formulario
                 />
             )}
         </>
@@ -117,6 +130,7 @@ ProveedoresTable.propTypes = {
     onDelete: PropTypes.func.isRequired,
     requestSort: PropTypes.func,
     onGuardarItems: PropTypes.func.isRequired,
+    onObtenerItemsProveedor: PropTypes.func.isRequired, // Nueva prop
 };
 
 export default ProveedoresTable;

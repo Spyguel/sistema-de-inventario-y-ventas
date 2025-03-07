@@ -56,48 +56,63 @@ const postcontacto = async (req, res) => {
 }
 
 const deletecontacto = async (req, res) => {
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      const { id } = req.params;
-  
-      const movimientosResult = await client.query(
-        'SELECT COUNT(*) FROM public.movimiento WHERE id_contacto = $1',
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { id } = req.params;
+
+    // Verificar si el contacto tiene movimientos asociados
+    const movimientosResult = await client.query(
+      'SELECT COUNT(*) FROM public.movimiento WHERE id_contacto = $1',
+      [id]
+    );
+    const tieneMovimientos = parseInt(movimientosResult.rows[0].count) > 0;
+
+    // Verificar si el contacto tiene ítems asociados en contacto_item
+    const contactoItemResult = await client.query(
+      'SELECT COUNT(*) FROM public.contacto_item WHERE id_contacto = $1',
+      [id]
+    );
+    const tieneItemsAsociados = parseInt(contactoItemResult.rows[0].count) > 0;
+
+    // Si el contacto tiene movimientos o ítems asociados, desactivarlo en lugar de eliminarlo
+    if (tieneMovimientos || tieneItemsAsociados) {
+      await client.query(
+        'UPDATE public.contacto SET activo = not activo WHERE id_contacto = $1 RETURNING *',
         [id]
       );
-      const tieneMovimientos = parseInt(movimientosResult.rows[0].count) > 0;
-  
-      if (tieneMovimientos) {
-        await client.query('ROLLBACK');
-        return res.status(400).json({ 
-          error: 'No se puede eliminar el contacto porque tiene movimientos asociados',
-          tieneMovimientos: true
-        });
-      }
-  
-      const deleteResult = await client.query(
-        'DELETE FROM public.contacto WHERE id_contacto = $1 RETURNING *',
-        [id]
-      );
-  
-      if (deleteResult.rows.length === 0) {
-        await client.query('ROLLBACK');
-        return res.status(404).json({ error: 'Contacto no encontrado' });
-      }
-  
       await client.query('COMMIT');
-      res.status(200).json({ 
-        message: 'Contacto eliminado correctamente',
-        contactoEliminado: deleteResult.rows[0]
+      return res.status(200).json({
+        message: 'El contacto tiene movimientos o ítems asociados. Se ha desactivado.',
+        tieneMovimientos,
+        tieneItemsAsociados,
       });
-    } catch (error) {
-      await client.query('ROLLBACK');
-      console.error('❌ Error al eliminar contacto:', error);
-      res.status(500).json({ error: `Error al eliminar el contacto: ${error.message}` });
-    } finally {
-      client.release();
     }
-}
+
+    // Si no tiene movimientos ni ítems asociados, eliminarlo
+    const deleteResult = await client.query(
+      'DELETE FROM public.contacto WHERE id_contacto = $1 RETURNING *',
+      [id]
+    );
+
+    if (deleteResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Contacto no encontrado' });
+    }
+
+    await client.query('COMMIT');
+    res.status(200).json({
+      message: 'Contacto eliminado correctamente',
+      contactoEliminado: deleteResult.rows[0],
+    });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('❌ Error al eliminar contacto:', error);
+    res.status(500).json({ error: `Error al eliminar el contacto: ${error.message}` });
+  } finally {
+    client.release();
+  }
+};
 
 const putcontacto = async (req, res) => {
     try {

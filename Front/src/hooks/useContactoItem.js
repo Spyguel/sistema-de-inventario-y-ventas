@@ -29,6 +29,36 @@ const useContactoItem = () => {
     fetchContactoItems();
   }, []);
 
+   // Función para obtener los ítems asociados a un contacto específico
+   const getContactoItemsByContacto = async (id_contacto) => {
+    try {
+      console.log('Obteniendo ítems asociados para el contacto con ID:', id_contacto); // Verificar el ID del contacto
+  
+      const response = await fetch(`http://localhost:3000/contacto_item/contacto/${id_contacto}`);
+      console.log('Respuesta del servidor:', response); // Verificar la respuesta del servidor
+  
+      if (!response.ok) {
+        throw new Error('Error al obtener las relaciones del contacto');
+      }
+  
+      const data = await response.json();
+      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+  
+      // Verificar si la respuesta tiene la propiedad "items"
+      if (!data.items) {
+        console.error('La respuesta del servidor no tiene la propiedad "items":', data);
+        throw new Error('Formato de respuesta inválido');
+      }
+  
+      console.log('Ítems asociados obtenidos:', data.items); // Verificar los ítems asociados
+      return data.items; // Devolver los ítems asociados
+    } catch (error) {
+      console.error('Error al obtener contacto-item por contacto:', error);
+      throw error;
+    }
+  };
+
+
   // Función para crear o actualizar una relación contacto-ítem
   const handleGuardarContactoItem = async (contactoItem) => {
     console.log("Llega al GuardarItem: ", contactoItem);
@@ -37,15 +67,19 @@ const useContactoItem = () => {
 
     try {
       // Verificar si la relación ya existe
-      const response = await fetch(`http://localhost:3000/contacto_item/check/${id_contacto}`);
-      if (!response.ok) {
+      const checkResponse = await fetch(
+        `http://localhost:3000/contacto_item/check-relation/${id_contacto}/${id_item}`
+      );
+
+      if (!checkResponse.ok) {
         throw new Error('Error al verificar la relación');
       }
-      const { hasRelations } = await response.json();
 
-      if (hasRelations) {
-        // Actualizar la relación
-        const updateResponse = await fetch('http://localhost:3000/contacto_item', {
+      const { exists } = await checkResponse.json(); // Asume que el backend devuelve { exists: true/false }
+
+      if (exists) {
+        // Si la relación ya existe, actualizarla
+        const updateResponse = await fetch(`http://localhost:3000/contacto_item/${id_contacto}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -57,7 +91,7 @@ const useContactoItem = () => {
           throw new Error('Error al actualizar la relación');
         }
       } else {
-        // Crear la relación
+        // Si la relación no existe, crearla
         const createResponse = await fetch('http://localhost:3000/contacto_item', {
           method: 'POST',
           headers: {
@@ -74,7 +108,6 @@ const useContactoItem = () => {
       // Actualizar la lista de relaciones después de guardar
       fetchContactoItems();
       return true;
-
     } catch (error) {
       console.error('Error al guardar contacto-item:', error);
       return false;
@@ -85,9 +118,12 @@ const useContactoItem = () => {
   const handleEliminarContactoItem = async (id_contacto) => {
     try {
       // Eliminar todas las relaciones del contacto
-      const deleteResponse = await fetch(`http://localhost:3000/contacto_item/delete-by-contacto/${id_contacto}`, {
-        method: 'DELETE',
-      });
+      const deleteResponse = await fetch(
+        `http://localhost:3000/contacto_item/delete-by-contacto/${id_contacto}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!deleteResponse.ok) {
         throw new Error('Error al eliminar las asociaciones');
@@ -107,8 +143,10 @@ const useContactoItem = () => {
     loading,
     error,
     fetchContactoItems,
+    getContactoItemsByContacto,
     handleGuardarContactoItem,
     handleEliminarContactoItem,
+    
   };
 };
 

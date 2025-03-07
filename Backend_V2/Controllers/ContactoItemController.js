@@ -12,16 +12,33 @@ const getContactoItems = async (req, res) => {
   };
   
   // Función para obtener las relaciones de un contacto específico
-  const getContactoItemsByContacto = async (req, res) => {
-    const { id_contacto } = req.params;
-    try {
-      const result = await pool.query('SELECT * FROM contacto_item WHERE id_contacto = $1', [id_contacto]);
-      res.status(200).json(result.rows);
-    } catch (err) {
-      console.error('Error al obtener las relaciones de contacto:', err);
-      res.status(500).json({ message: 'Error al obtener las relaciones del contacto' });
+  // Función para obtener las relaciones de un contacto específico
+const getContactoItemsByContacto = async (req, res) => {
+  const { id_contacto } = req.params;
+  console.log('Solicitud recibida para obtener ítems asociados al contacto con ID:', id_contacto); // Verificar el ID recibido
+
+  try {
+    // Consultar la base de datos
+    const result = await pool.query('SELECT * FROM contacto_item WHERE id_contacto = $1', [id_contacto]);
+    console.log('Resultado de la consulta:', result.rows); // Verificar los datos obtenidos de la base de datos
+
+    // Verificar si se encontraron relaciones
+    if (result.rows.length === 0) {
+      console.log('No se encontraron ítems asociados para el contacto con ID:', id_contacto);
+      return res.status(200).json({ items: [] }); // Devolver un array vacío si no hay relaciones
     }
-  };
+
+    // Extraer los id_item de las relaciones
+    const itemsAsociados = result.rows.map((row) => row.id_item);
+    console.log('Ítems asociados encontrados:', itemsAsociados); // Verificar los ítems asociados
+
+    // Devolver los ítems asociados en el formato esperado
+    res.status(200).json({ items: itemsAsociados });
+  } catch (err) {
+    console.error('Error al obtener las relaciones de contacto:', err);
+    res.status(500).json({ message: 'Error al obtener las relaciones del contacto' });
+  }
+};
   
   // Función para verificar si ya existe una relación entre un contacto y un ítem
   const checkRelationExists = async (req, res) => {

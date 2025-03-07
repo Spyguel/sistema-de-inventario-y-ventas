@@ -1,12 +1,20 @@
-// hooks/useFetchContacto.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const useFetchContacto = () => {
     const [clientes, setClientes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [message, setMessage] = useState({ isOpen: false, text: '', type: 'info' });
 
-    const fetchClientes = async () => {
+    const showMessage = (text, type = 'info') => {
+        setMessage({ isOpen: true, text, type });
+    };
+
+    const closeMessage = () => {
+        setMessage({ isOpen: false, text: '', type: 'info' });
+    };
+
+    const fetchClientes = useCallback(async () => {
         try {
             setLoading(true);
             const response = await fetch('http://localhost:3000/contacto');
@@ -18,11 +26,11 @@ const useFetchContacto = () => {
             setError(null);
         } catch (err) {
             setError(err.message);
-            console.error('Error fetching clientes:', err);
+            showMessage('Error fetching clientes: ' + err.message, 'error');
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     const handleGuardarContacto = async (nuevoProveedor, selectedItems, handleCloseModal, fetchProveedores) => {
         try {
@@ -32,8 +40,6 @@ const useFetchContacto = () => {
             const method = isEditing ? 'PUT' : 'POST';
 
             const proveedorData = { ...nuevoProveedor, tipo_contacto: 'Proveedor' };
-
-            console.log('Enviando solicitud:', { url, method, body: proveedorData, contactoId });
 
             const response = await fetch(url, {
                 method,
@@ -48,9 +54,9 @@ const useFetchContacto = () => {
 
             fetchProveedores();
             handleCloseModal('proveedor');
+            showMessage('Los proveedores se actualizaron correctamente', 'success');
         } catch (error) {
-            console.error('Error completo:', error);
-            alert(`Error al guardar el proveedor: ${error.message}`);
+            showMessage('Error al guardar el proveedor: ' + error.message, 'error');
         }
     };
 
@@ -59,19 +65,17 @@ const useFetchContacto = () => {
             const response = await fetch(`http://localhost:3000/contacto/${id}`, { method: 'DELETE' });
             const data = await response.json();
             if (!response.ok) {
-                if (data.tieneMovimientos) {
-                    // En lugar de mostrar un mensaje de error, desactiva el proveedor
-                    await handleToggleEstado(id, clientes, fetchProveedores);
-                    alert('El proveedor no se puede eliminar porque tiene movimientos asociados. Se ha desactivado.');
+                if (data.tieneMovimientos || data.tieneItemsAsociados) {
+                    showMessage('El proveedor tiene movimientos o ítems asociados. Se ha desactivado.', 'warning');
                 } else {
                     throw new Error(data.error || 'Error al eliminar el proveedor');
                 }
                 return;
             }
             fetchProveedores();
+            showMessage('Proveedor inabilitado con exito.', 'success');
         } catch (error) {
-            console.error('Error:', error);
-            alert(`Error al eliminar el proveedor: ${error.message}`);
+            showMessage('Error al eliminar el proveedor: ' + error.message, 'error');
         }
     };
 
@@ -81,23 +85,23 @@ const useFetchContacto = () => {
             const data = await response.json();
             if (!response.ok) {
                 if (data.tieneMovimientos) {
-                    alert('No se puede eliminar el cliente porque tiene movimientos asociados.');
+                    showMessage('No se puede eliminar el cliente porque tiene movimientos asociados.', 'warning');
                 } else {
                     throw new Error(data.error || 'Error al eliminar el cliente');
                 }
                 return;
             }
             fetchClientes();
+            showMessage('El estado del cliente cambio exitosamente.', 'success');
         } catch (error) {
-            console.error('Error:', error);
-            alert(`Error al eliminar el cliente: ${error.message}`);
+            showMessage('Error al eliminar el cliente: ' + error.message, 'error');
         }
     }
 
     const handleToggleEstado = async (id, proveedores, fetchProveedores) => {
         const proveedor = proveedores.find(c => c.id_contacto === id);
         if (!proveedor || proveedor.activo === undefined) {
-            console.error('El proveedor no tiene un estado válido');
+            showMessage('El proveedor no tiene un estado válido', 'error');
             return;
         }
 
@@ -115,16 +119,28 @@ const useFetchContacto = () => {
             }
 
             fetchProveedores();
+            showMessage('Estado del proveedor cambiado correctamente.', 'success');
         } catch (error) {
-            console.error('Error:', error);
+            showMessage('Error al cambiar el estado del proveedor: ' + error.message, 'error');
         }
     };
 
     useEffect(() => {
         fetchClientes();
-    }, []);
+    }, [fetchClientes]);
 
-    return { clientes, loading, error, fetchClientes, handleGuardarContacto, handleEliminarProveedor, handleEliminarCliente, handleToggleEstado };
+    return { 
+        clientes, 
+        loading, 
+        error, 
+        fetchClientes, 
+        handleGuardarContacto, 
+        handleEliminarProveedor, 
+        handleEliminarCliente, 
+        handleToggleEstado,
+        message,
+        closeMessage
+    };
 };
 
 export default useFetchContacto;

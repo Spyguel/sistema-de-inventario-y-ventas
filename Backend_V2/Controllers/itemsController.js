@@ -300,16 +300,22 @@ const getComposersByItem = async (req, res) => {
 };
 
 const getItemsProveedor = async (req, res) => {
-  try{
-    const result = await pool.query('SELECT "id_item", "nombre" FROM public.item WHERE activo = true');
-  
+  try {
+    // Consulta SQL para obtener ítems activos y de tipo "Materia Prima"
+    const query = `
+      SELECT "id_item", "nombre" FROM public.item WHERE activo = true AND tipo_item = 'Materia Prima'`;
+
+    // Ejecutar la consulta
+    const result = await pool.query(query);
+    console.log('Resultado de la consulta:', result.rows); 
+
+    // Devolver los ítems en el formato esperado
     res.status(200).json({ items: result.rows });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Error al obtener ítems:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
-}
+};
 
 
 module.exports = {
