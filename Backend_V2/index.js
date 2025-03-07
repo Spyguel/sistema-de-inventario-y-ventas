@@ -7,7 +7,7 @@ const { register, login} = require('./Routes/auth.routes');
 const { usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
 const { contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem, getContactosMovimiento } = require('./Controllers/ContactController');
 const { getItems, getItemsTipo, getItemsMovimiento, getItemsProveedor, createItem, updateItem, toggleItemStatus, getMateriaPrimaActivos, createOrUpdateComposition, getComposersByItem} = require('./Controllers/itemsController');
-const {deleteContactoItemsByContacto, updateContactoItem, createContactoItem, checkRelationExists, getContactoItemsByContacto} = require('./Controllers/ContactoItemController.js')
+const {getContactoItems, createContactoItem, checkRelationExists, getContactoItemsByContacto, deleteContactoItem} = require('./Controllers/ContactoItemController.js')
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
@@ -81,16 +81,16 @@ app.get('/item_composicion/:id', getComposersByItem);
 
 // ─── RUTAS DE CONTACTO_ITEM ─────────────────────────────────────────────
 
-// Ruta para eliminar los items relacionados con un contacto (por ID de contacto)
-app.delete('/contacto_item/delete-by-contacto/:id_contacto', deleteContactoItemsByContacto);
-// Ruta para crear un nuevo contacto_item
-app.post('/contacto_item', createContactoItem);
-// Ruta para obtener los items de contacto por ID de contacto
+// Ruta para obtener todas las relaciones contacto-ítem
+app.get('/contacto_item', getContactoItems);
+// Ruta para obtener las relaciones de un contacto específico
 app.get('/contacto_item/contacto/:id_contacto', getContactoItemsByContacto);
-// Ruta para actualizar un contacto_item por ID
-app.put('/contacto_item/:id', updateContactoItem);
-// Ruta para verificar si ya existe una relación entre un contacto y un item
+// Ruta para verificar si ya existe una relación entre un contacto y un ítem
 app.get('/contacto_item/check-relation/:id_contacto/:id_item', checkRelationExists);
+// Ruta para crear una nueva relación contacto-ítem
+app.post('/contacto_item', createContactoItem);
+// Ruta para eliminar una relación específica entre un contacto y un ítem
+app.delete('/contacto_item/:id_contacto/:id_item', deleteContactoItem);
 
 // ─── RUTAS ROL ─────────────────────────────────────────────
 

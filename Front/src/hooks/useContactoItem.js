@@ -1,153 +1,131 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const useContactoItem = () => {
-  const [contactoItems, setContactoItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  // Función para obtener todas las relaciones contacto-ítem
-  const fetchContactoItems = async () => {
-    try {
+    // Función para extraer el id_contacto correctamente
+    const extractIdContacto = (id_contacto) => {
+        console.log('extractIdContacto - Recibido:', id_contacto);
+        if (typeof id_contacto === 'object' && id_contacto !== null) {
+            const extracted = id_contacto.id_contacto; // Si es un objeto, extrae el id_contacto
+            console.log('extractIdContacto - Extraído:', extracted);
+            return extracted;
+        }
+        console.log('extractIdContacto - Valor directo:', id_contacto);
+        return id_contacto; // Si ya es un número, lo devuelve directamente
+    };
+
+    const getContactoItemsByContacto = async (id_contacto) => {
+        setLoading(true);
+        console.log('getContactoItemsByContacto - Iniciado con id_contacto:', id_contacto);
+        try {
+            // Extrae el id_contacto en el formato correcto
+            const id = extractIdContacto(id_contacto);
+            console.log('getContactoItemsByContacto - id formateado:', id);
+
+            const response = await fetch(`http://localhost:3000/contacto_item/contacto/${id}`);
+            console.log('getContactoItemsByContacto - Respuesta fetch:', response);
+            if (!response.ok) {
+                throw new Error('Error al obtener las relaciones del contacto');
+            }
+            const data = await response.json();
+            console.log('getContactoItemsByContacto - Data recibida:', data);
+            return data.items;
+        } catch (error) {
+            setError(error.message);
+            console.error('Error al obtener contacto-item por contacto:', error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleGuardarContactoItem = async (id_contacto, selectedItems) => {
       setLoading(true);
-      const response = await fetch('http://localhost:3000/contacto_item');
-      if (!response.ok) {
-        throw new Error('Error al obtener las asociaciones');
-      }
-      const data = await response.json();
-      setContactoItems(data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-      console.error('Error fetching contacto items:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Cargar las relaciones al montar el componente
-  useEffect(() => {
-    fetchContactoItems();
-  }, []);
-
-   // Función para obtener los ítems asociados a un contacto específico
-   const getContactoItemsByContacto = async (id_contacto) => {
-    try {
-      console.log('Obteniendo ítems asociados para el contacto con ID:', id_contacto); // Verificar el ID del contacto
-  
-      const response = await fetch(`http://localhost:3000/contacto_item/contacto/${id_contacto}`);
-      console.log('Respuesta del servidor:', response); // Verificar la respuesta del servidor
-  
-      if (!response.ok) {
-        throw new Error('Error al obtener las relaciones del contacto');
+      console.log('handleGuardarContactoItem - Iniciado con id_contacto:', id_contacto);
+      console.log('handleGuardarContactoItem - selectedItems recibido:', selectedItems);
+      
+      // Si selectedItems es nulo o undefined, intenta extraer id_item desde el objeto id_contacto (si existe)
+      if (!Array.isArray(selectedItems)) {
+          if (id_contacto && id_contacto.id_item) {
+              console.log('handleGuardarContactoItem - selectedItems es nulo; usando id_item del objeto id_contacto');
+              selectedItems = [ id_contacto.id_item ];
+          } else {
+              console.error('handleGuardarContactoItem - Error: selectedItems no es un array y no se encontró id_item en id_contacto:', id_contacto);
+              setLoading(false);
+              return false;
+          }
       }
   
-      const data = await response.json();
-      console.log('Datos recibidos del servidor:', data); // Verificar los datos recibidos
+      try {
+          // Extrae el id_contacto en el formato correcto
+          const id = extractIdContacto(id_contacto);
+          console.log('handleGuardarContactoItem - id formateado:', id);
   
-      // Verificar si la respuesta tiene la propiedad "items"
-      if (!data.items) {
-        console.error('La respuesta del servidor no tiene la propiedad "items":', data);
-        throw new Error('Formato de respuesta inválido');
-      }
+          // Obtener las relaciones actuales del contacto
+          const relacionesActuales = await getContactoItemsByContacto(id);
+          console.log('handleGuardarContactoItem - relaciones actuales:', relacionesActuales);
   
-      console.log('Ítems asociados obtenidos:', data.items); // Verificar los ítems asociados
-      return data.items; // Devolver los ítems asociados
-    } catch (error) {
-      console.error('Error al obtener contacto-item por contacto:', error);
-      throw error;
-    }
-  };
-
-
-  // Función para crear o actualizar una relación contacto-ítem
-  const handleGuardarContactoItem = async (contactoItem) => {
-    console.log("Llega al GuardarItem: ", contactoItem);
-
-    const { id_contacto, id_item } = contactoItem;
-
-    try {
-      // Verificar si la relación ya existe
-      const checkResponse = await fetch(
-        `http://localhost:3000/contacto_item/check-relation/${id_contacto}/${id_item}`
-      );
-
-      if (!checkResponse.ok) {
-        throw new Error('Error al verificar la relación');
+          // Si existen relaciones actuales, eliminamos aquellas que ya no se encuentren en selectedItems
+          if (relacionesActuales && relacionesActuales.length > 0) {
+              console.log('handleGuardarContactoItem - Comenzando a filtrar items a eliminar');
+              const itemsAEliminar = relacionesActuales.filter(item => {
+                  const isSelected = selectedItems.includes(item);
+                  console.log(`Comparando item: ${item} - isSelected: ${isSelected}`);
+                  return !isSelected;
+              });
+              console.log('handleGuardarContactoItem - itemsAEliminar:', itemsAEliminar);
+  
+              // Eliminar las relaciones de los ítems deseleccionados
+              for (const id_item of itemsAEliminar) {
+                  console.log(`handleGuardarContactoItem - Eliminando relación para id_item: ${id_item}`);
+                  await fetch(`http://localhost:3000/contacto_item/${id}/${id_item}`, {
+                      method: 'DELETE',
+                  });
+              }
+          }
+  
+          // Crear nuevas relaciones para los ítems seleccionados
+          for (const id_item of selectedItems) {
+              console.log(`handleGuardarContactoItem - Procesando id_item seleccionado: ${id_item}`);
+              const checkResponse = await fetch(
+                  `http://localhost:3000/contacto_item/check-relation/${id}/${id_item}`
+              );
+              console.log(`handleGuardarContactoItem - Respuesta check para ${id_item}:`, checkResponse);
+              const { exists } = await checkResponse.json();
+              console.log(`handleGuardarContactoItem - Existe relación para ${id_item}?`, exists);
+  
+              if (!exists) {
+                  console.log(`handleGuardarContactoItem - Creando nueva relación para id_item: ${id_item}`);
+                  await fetch('http://localhost:3000/contacto_item', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({ id_contacto: id, id_item }),
+                  });
+              }
+          }
+  
+          console.log('handleGuardarContactoItem - Operación completada correctamente');
+          return true;
+      } catch (error) {
+          setError(error.message);
+          console.error('Error al guardar contacto-item:', error);
+          return false;
+      } finally {
+          setLoading(false);
       }
-
-      const { exists } = await checkResponse.json(); // Asume que el backend devuelve { exists: true/false }
-
-      if (exists) {
-        // Si la relación ya existe, actualizarla
-        const updateResponse = await fetch(`http://localhost:3000/contacto_item/${id_contacto}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id_contacto, id_item }),
-        });
-
-        if (!updateResponse.ok) {
-          throw new Error('Error al actualizar la relación');
-        }
-      } else {
-        // Si la relación no existe, crearla
-        const createResponse = await fetch('http://localhost:3000/contacto_item', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id_contacto, id_item }),
-        });
-
-        if (!createResponse.ok) {
-          throw new Error('Error al crear la relación');
-        }
-      }
-
-      // Actualizar la lista de relaciones después de guardar
-      fetchContactoItems();
-      return true;
-    } catch (error) {
-      console.error('Error al guardar contacto-item:', error);
-      return false;
-    }
   };
+  
 
-  // Función para eliminar todas las relaciones de un contacto específico
-  const handleEliminarContactoItem = async (id_contacto) => {
-    try {
-      // Eliminar todas las relaciones del contacto
-      const deleteResponse = await fetch(
-        `http://localhost:3000/contacto_item/delete-by-contacto/${id_contacto}`,
-        {
-          method: 'DELETE',
-        }
-      );
-
-      if (!deleteResponse.ok) {
-        throw new Error('Error al eliminar las asociaciones');
-      }
-
-      // Actualizar la lista de relaciones después de eliminar
-      fetchContactoItems();
-      return true;
-    } catch (error) {
-      console.error('Error al eliminar contacto-item:', error);
-      return false;
-    }
-  };
-
-  return {
-    contactoItems,
-    loading,
-    error,
-    fetchContactoItems,
-    getContactoItemsByContacto,
-    handleGuardarContactoItem,
-    handleEliminarContactoItem,
-    
-  };
+    return {
+        loading,
+        error,
+        getContactoItemsByContacto,
+        handleGuardarContactoItem,
+    };
 };
 
 export default useContactoItem;
