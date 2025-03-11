@@ -1,3 +1,4 @@
+// MovimientosTable.js
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
@@ -34,7 +35,9 @@ const MovimientosTable = ({
     { key: 'cantidad', label: 'Cantidad' },
     { key: 'estado', label: 'Estado' },
     { key: 'razon', label: 'Razón' },
-    { key: 'detalle', label: 'Detalle' }
+    { key: 'detalle', label: 'Detalle' },
+    { key: 'documento.tipo_documento', label: 'Tipo Documento' }, // Nuevo campo
+    { key: 'documento.total', label: 'Total Documento' } // Nuevo campo
   ];
 
   // Transformamos la fecha y agregamos el estado (ya vienen los joins realizados)
@@ -57,7 +60,7 @@ const MovimientosTable = ({
     }
   };
 
-  // Se actualiza para que valide la clave "tipo_mov" que es la que se espera en el objeto
+  // Renderizado personalizado para celdas
   const renderCell = (movimiento, header) => {
     if (header.key === 'tipo_mov') {
       return (
@@ -134,9 +137,12 @@ MovimientosTable.propTypes = {
     cantidad: PropTypes.number.isRequired,
     tipo_mov: PropTypes.string.isRequired,
     activo: PropTypes.bool.isRequired,
-    observaciones: PropTypes.string,
     razon: PropTypes.string,
     detalle: PropTypes.string,
+    documento: PropTypes.shape({ // Nuevo campo
+      tipo_documento: PropTypes.string,
+      total: PropTypes.number
+    })
   })).isRequired,
   onToggleActive: PropTypes.func.isRequired,
   requestSort: PropTypes.func

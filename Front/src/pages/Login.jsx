@@ -1,45 +1,27 @@
-import { useState } from "react";
-import { useNavigate } from 'react-router-dom';
+// components/Login.js
+import { useState } from 'react';
+import useUsuario from '../hooks/useUsuarios';
 import signinImage from '../assets/piclumen-1736819980550.png';
 
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
+    const { login, loading, error } = useUsuario();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        try {
-            const response = await fetch('http://localhost:3000/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
-    
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem('token', data.token); // Almacenar el token
-                localStorage.setItem('rol', data.rol); // Almacenar el nombre del rol
-                navigate('/dashboard'); // Redirigir al dashboard
-            } else {
-                alert(data.error || 'Error al iniciar sesión');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Error al conectar con el servidor');
-        }
+        await login(email, password);
     };
 
     return (
-        <div className="font-[sans-serif] max-sm:px-4">
-            <div className="min-h-screen flex flex-col items-center justify-center">
+        <div className="h-screen font-[sans-serif] max-sm:px-4 overflow-hidden">
+            <div className="max-h-screen flex flex-col items-center justify-center">
                 <div className="grid md:grid-cols-2 items-center gap-4 max-md:gap-8 max-w-6xl max-md:max-w-lg w-full p-4 m-4 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.3)] rounded-md">
                     <div className="md:max-w-md w-full px-4 py-4">
                         <form onSubmit={handleLogin}>
                             <div className="mb-12">
                                 <h3 className="text-gray-800 text-3xl font-extrabold">Inicio de sesión</h3>
+                                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                             </div>
 
                             <div>
@@ -86,23 +68,13 @@ function Login() {
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-4 mt-6">
-                                <div className="flex items-center">
-                                    <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 shrink-0 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-                                    <label htmlFor="remember-me" className="ml-3 block text-sm text-gray-800">
-                                        Recordar
-                                    </label>
-                                </div>
-                                <div>
-                                    <a href="jajvascript:void(0);" className="text-login-button font-semibold text-sm hover:underline">
-                                        Olvidaste tu contraseña?
-                                    </a>
-                                </div>
-                            </div>
-
                             <div className="mt-12">
-                                <button type="submit" className="w-full shadow-xl py-2.5 px-4 text-sm tracking-wide rounded-md text-white bg-login-button hover:bg-login-button-hover focus:outline-none">
-                                    Iniciar sesión
+                                <button
+                                    type="submit"
+                                    className="w-full shadow-xl py-2.5 px-4 text-sm tracking-wide rounded-md text-white bg-login-button hover:bg-login-button-hover focus:outline-none"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
                                 </button>
                             </div>
                         </form>

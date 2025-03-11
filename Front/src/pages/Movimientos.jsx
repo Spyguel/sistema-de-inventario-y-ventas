@@ -1,44 +1,59 @@
 import { useState } from 'react';
-import PropTypes from 'prop-types';
-
 import Button from '../components/common/button.jsx';
 import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 import MovimientoForm from '../components/Modals/MovimientoForm.jsx';
-
-import useSearch from '../hooks/useSearch';
-import useSearchOptions from '../hooks/useSearchOption.js';
 import useFetchMovimientos from '../hooks/useFetchMovimientos.js';
 import useContactos from '../hooks/useContactos.js';
-import useItems from '../hooks/useItems.js'
+import useItems from '../hooks/useItems.js';
+import useUsuario from '../hooks/useUsuarios.js';
+import { getFilteredMovimientosData } from '../utils/filterMovimientos';
 
-function Movimientos({ usuarios, documentos }) {
+function Movimientos() {
+  const { usuario, loading: usuarioLoading, error: usuarioError } = useUsuario();
+  const { items } = useItems();
+  const { contactos } = useContactos();
   const { movimientos, handleGuardarMovimiento, handleToggleActive } = useFetchMovimientos();
-  const { contactos: contactosData } = useContactos(); 
-  const { items: itemsData } = useItems(); 
-  const { searchConfig, handleSearch, filterData } = useSearch();
-  const searchOptions = useSearchOptions(movimientos);
+
   
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Función genérica de filtrado para movimientos
+  const filterData = (data, term) => {
+    return data.filter(movimiento => 
+      movimiento.id_movimiento.toString().includes(term) ||
+      movimiento.tipo_mov.toLowerCase().includes(term.toLowerCase()) ||
+      movimiento.razon.toLowerCase().includes(term.toLowerCase()) ||
+      movimiento.detalle.toLowerCase().includes(term.toLowerCase())
+    );
+  };
 
+  const searchConfig = { term: searchTerm };
+
+  // Se aplican los filtros del utils para movimientos
+  const movimientosFiltrados = getFilteredMovimientosData(movimientos, searchConfig, filterData);
+
+  const handleSearch = (term) => setSearchTerm(term);
   const openForm = () => setIsFormOpen(true);
   const closeForm = () => setIsFormOpen(false);
 
-  const getFilteredData = () => {
-    const { term, filters } = searchConfig;
-    return filterData(movimientos, term, filters);
+  const handleGuardar = async (movimientoData) => {
+    await handleGuardarMovimiento({
+      ...movimientoData,
+      id_usuario: usuario.id
+    });
+    closeForm();
   };
 
-  const getFechaHoraActual = () => {
-    const ahora = new Date();
-    return ahora.toLocaleDateString('es-ES') + ', ' + ahora.toLocaleTimeString('es-ES');
-  };
+  if (usuarioLoading) return <div>Cargando usuario...</div>;
+  if (usuarioError) return <div>Error: {usuarioError}</div>;
 
   return (
     <div className="h-full ml-10 p-4">
       <div className="rounded-lg shadow-lg p-4 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
-        <p className="text-sm text-gray-500 mb-4">{getFechaHoraActual()}</p>
+        <p className="text-sm text-gray-500 mb-4">Administra los movimientos de inventario</p>
         
         <div className="flex justify-end mb-4">
           <Button
@@ -53,13 +68,11 @@ function Movimientos({ usuarios, documentos }) {
         <BarraBusqueda
           onSearch={handleSearch}
           placeholder="Buscar movimientos..."
-          options={searchOptions.movimientos || []}
-          initialFilters={searchConfig.filters}
         />
 
         <div className="mt-4 border border-gray-200 rounded-lg h-[60%]">
           <MovimientosTable
-            movimientos={getFilteredData()}
+            movimientos={movimientosFiltrados}
             onToggleActive={handleToggleActive}
           />
         </div>
@@ -68,42 +81,12 @@ function Movimientos({ usuarios, documentos }) {
       <MovimientoForm
         isOpen={isFormOpen}
         onClose={closeForm}
-        onGuardar={handleGuardarMovimiento}
-        items={itemsData}
-        usuarios={usuarios}
-        contactos={contactosData}  
-        documentos={documentos}
+        onGuardar={handleGuardar}
+        items={items}
+        contactos={contactos}
       />
     </div>
   );
 }
-
-Movimientos.propTypes = {
-  items: PropTypes.arrayOf(
-    PropTypes.shape({
-      ID_item: PropTypes.number.isRequired,
-      nombre: PropTypes.string.isRequired,
-      stock: PropTypes.number
-    })
-  ).isRequired,
-  usuarios: PropTypes.arrayOf(
-    PropTypes.shape({
-      ID_usuario: PropTypes.number.isRequired,
-      nombre: PropTypes.string.isRequired
-    })
-  ).isRequired,
-  documentos: PropTypes.arrayOf(
-    PropTypes.shape({
-      ID_documento: PropTypes.number.isRequired,
-      nombre: PropTypes.string.isRequired
-    })
-  ).isRequired
-};
-
-Movimientos.defaultProps = {
-  items: [],
-  usuarios: [],
-  documentos: []
-};
 
 export default Movimientos;

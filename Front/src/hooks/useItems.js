@@ -9,12 +9,12 @@ const useItems = () => {
     // Función principal: obtiene los ítems de movimiento
     const fetchItems = async () => {
         try {
-            const response = await fetch('/items_movimiento');
+            const response = await fetch('http://localhost:3000/items_movimiento');
             if (!response.ok) {
                 throw new Error('Error al obtener los ítems de movimiento');
             }
             const data = await response.json();
-            setItems(data);
+            setItems(data.items);
         } catch (err) {
             setError(err);
         } finally {
