@@ -24,6 +24,7 @@ function useFetchMovimientos() {
   }, []);
 
   const handleGuardarMovimiento = async (movimientoData) => {
+    console.log("Los datos que llegan hasta movimientoData", movimientoData)
     try {
       const url = movimientoData.ID_movimiento
         ? `http://localhost:3000/movimientos/${movimientoData.ID_movimiento}` // Actualizar movimiento

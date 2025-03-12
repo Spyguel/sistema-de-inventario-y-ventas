@@ -29,6 +29,8 @@ const useUsuario = () => {
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('rol', data.rol);
                 localStorage.setItem('userId', data.userId);
+                alert("Usuario logueado", data.userID, data.rol)
+                console.log("Usuario Logueado". data)
 
                 // Redirigir al dashboard
                 navigate('/dashboard');

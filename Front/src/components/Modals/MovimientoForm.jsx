@@ -35,12 +35,6 @@ const MovimientoForm = ({
   // Estados locales para almacenar contactos e ítems según la selección
   const [filteredContacts, setFilteredContacts] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-
-  useEffect(() => {
-    console.log('Datos recibidos en MovimientoForm:', data);
-    alert('Datos recibidos: ' + JSON.stringify(data));
-  }, [data]);
-  
   
   useEffect(() => {
     if (formData.tipo_mov === TIPOS_MOVIMIENTO.ENTRADA) {
@@ -84,32 +78,49 @@ const MovimientoForm = ({
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.tipo_mov) {
+  
+    // Validación de Tipo de Movimiento
+    if (!formData.tipo_mov || formData.tipo_mov.trim() === '') {
       newErrors.tipo_mov = 'Seleccione un tipo de movimiento';
     }
-    if (!formData.razon) {
+    
+    // Validación de Razón
+    if (!formData.razon || formData.razon.trim() === '') {
       newErrors.razon = 'Seleccione una razón';
     }
-    if (!formData.id_contacto) {
+    
+    // Validación de Contacto
+    if (!formData.id_contacto || formData.id_contacto.trim() === '') {
       newErrors.id_contacto = 'Seleccione un contacto';
     }
-    if (formData.id_items.length === 0) {
+    
+    // Validación de Ítems y Cantidades
+    if (!formData.id_items || formData.id_items.length === 0) {
       newErrors.id_items = 'Seleccione al menos un ítem';
+    } else {
+      formData.id_items.forEach(id_item => {
+        const cantidad = formData.cantidades[id_item];
+        if (!cantidad || Number(cantidad) <= 0) {
+          newErrors[`cantidad_${id_item}`] = 'La cantidad debe ser mayor a 0';
+        }
+      });
     }
-    formData.id_items.forEach(id_item => {
-      if (!formData.cantidades[id_item] || Number(formData.cantidades[id_item]) <= 0) {
-        newErrors[`cantidad_${id_item}`] = 'La cantidad debe ser mayor a 0';
-      }
-    });
-    if (!formData.documento.tipo_documento) {
+    
+    // Validación de Datos del Documento
+    if (!formData.documento.tipo_documento || formData.documento.tipo_documento.trim() === '') {
       newErrors['documento.tipo_documento'] = 'Seleccione un tipo de documento';
     }
-    if (!formData.documento.fecha) {
+    if (!formData.documento.fecha || formData.documento.fecha.trim() === '') {
       newErrors['documento.fecha'] = 'Ingrese la fecha del documento';
     }
     if (!formData.documento.total || Number(formData.documento.total) <= 0) {
       newErrors['documento.total'] = 'El total debe ser mayor a 0';
     }
+    // Si deseas que el archivo PDF sea obligatorio, descomenta lo siguiente:
+     if (!formData.documento.pdf) {
+       newErrors['documento.pdf'] = 'Adjunte el archivo PDF';
+     }
+  
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -171,9 +182,35 @@ const MovimientoForm = ({
     setErrors({});
   };
 
+  const logFormData = (formData) => {
+    console.groupCollapsed('[MovimientoForm] Datos del formulario enviados');
+    console.log('Tipo Movimiento:', formData.tipo_mov);
+    console.log('Razón:', formData.razon);
+    console.log('ID Contacto:', formData.id_contacto);
+    console.log('Detalle:', formData.detalle);
+    
+    console.log('Items y Cantidades:');
+    formData.id_items.forEach(id_item => {
+      console.log(
+        `- Item ID: ${id_item},`,
+        `Cantidad: ${formData.cantidades[id_item]}`
+      );
+    });
+  
+    console.log('Documento:');
+    console.log('-- Tipo:', formData.documento.tipo_documento);
+    console.log('-- Fecha:', formData.documento.fecha);
+    console.log('-- Total:', formData.documento.total);
+    console.log('-- PDF:', formData.documento.pdf ? formData.documento.pdf.name : 'Ningún archivo seleccionado');
+    
+    console.groupEnd();
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    logFormData(formData);
     if (validateForm()) {
+
       onGuardar(formData);
       setToastMessage('Movimiento y documento guardados correctamente.');
       setToastType('success');

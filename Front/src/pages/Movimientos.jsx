@@ -48,7 +48,7 @@ function Movimientos() {
   const handleGuardar = async (movimientoData) => {
     await handleGuardarMovimiento({
       ...movimientoData,
-      id_usuario: usuario.id
+      id_usuario: usuario.userId
     });
     closeForm();
   };
