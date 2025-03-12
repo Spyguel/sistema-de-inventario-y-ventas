@@ -60,7 +60,7 @@ function Movimientos() {
   if (errorCI) return <div>Error: {errorCI}</div>;
 
   return (
-    <div className="h-full ml-10 p-4">
+    <div className="h-screen ml-10 p-4">
       <div className="rounded-lg shadow-lg p-4 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
         <p className="text-sm text-gray-500 mb-4">Administra los movimientos de inventario</p>

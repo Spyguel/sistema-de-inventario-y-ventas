@@ -1,13 +1,19 @@
 import PropTypes from 'prop-types';
 import Button from '../../button';
 
-const Form = ({ title, children, onSubmit, submitText = 'Guardar', cancelText, onCancel, columns = 1 }) => {
-  // Si se especifica 2 columnas, se aplica el grid, de lo contrario se usa el espaciado vertical
-  const childrenContainerClass = columns === 2 ? 'grid grid-cols-2 gap-4' : 'space-y-4';
+const Form = ({ title, children, onSubmit, submitText = 'Guardar', cancelText, onCancel, columns = 1, gridTemplate }) => {
   
+  const childrenContainerClass = gridTemplate
+  ? gridTemplate
+  : columns === 3
+  ? 'grid grid-cols-3 gap-2'
+  : columns === 2
+  ? 'grid grid-cols-2 gap-4'
+  : 'space-y-4';
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      {title && <h2 className="text-2xl font-bold text-gray-800 mb-4">{title}</h2>}
+    <form onSubmit={onSubmit} className="space-y-4">
+      {title && <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>}
       
       <div className={childrenContainerClass}>
         {children}
@@ -34,7 +40,8 @@ Form.propTypes = {
   submitText: PropTypes.string,
   cancelText: PropTypes.string,
   onCancel: PropTypes.func,
-  columns: PropTypes.number, // Nueva prop para configurar columnas
+  columns: PropTypes.number, 
+  gridTemplate: PropTypes.string
 };
 
 export default Form;

@@ -198,187 +198,217 @@ const MovimientoForm = ({
         }}
         title="Nuevo Movimiento y Documento"
         wide={true}
+          className="overflow-y-auto"
       >
         <Form
-          onSubmit={handleSubmit}
-          onCancel={() => {
-            onClose();
-            resetForm();
-          }}
-          cancelText="Cancelar"
-          submitText="Guardar"
-          columns={2}
-        >
-          {/* Sección Movimiento */}
-          <SelectInput
-            label="Tipo de Movimiento"
-            name="tipo_mov"
-            value={formData.tipo_mov}
-            onChange={handleChange}
-            options={[
-              { value: '', label: 'Seleccione tipo movimiento' },
-              { value: TIPOS_MOVIMIENTO.ENTRADA, label: TIPOS_MOVIMIENTO.ENTRADA },
-              { value: TIPOS_MOVIMIENTO.SALIDA, label: TIPOS_MOVIMIENTO.SALIDA }
-            ]}
-            error={errors.tipo_mov}
-          />
+  onSubmit={handleSubmit}
+  onCancel={() => {
+    onClose();
+    resetForm();
+  }}
+  cancelText="Cancelar"
+  submitText="Guardar"
+  // Usamos la prop gridTemplate para definir una grid de 3 columnas con gap
+  gridTemplate="grid grid-cols-3 gap-4"
+>
+  {/* Fila 1 */}
+  <div className="col-span-1">
+    <SelectInput
+      label="Tipo de Movimiento"
+      name="tipo_mov"
+      value={formData.tipo_mov}
+      onChange={handleChange}
+      options={[
+        { value: '', label: 'Seleccione tipo movimiento' },
+        { value: TIPOS_MOVIMIENTO.ENTRADA, label: TIPOS_MOVIMIENTO.ENTRADA },
+        { value: TIPOS_MOVIMIENTO.SALIDA, label: TIPOS_MOVIMIENTO.SALIDA }
+      ]}
+      error={errors.tipo_mov}
+    />
+  </div>
+  <div className="col-span-1">
+    <SelectInput
+      label="Razón"
+      name="razon"
+      value={formData.razon}
+      onChange={handleChange}
+      disabled={!formData.tipo_mov}
+      options={Object.values(RAZONES_MOVIMIENTO)
+        .filter(razon => {
+          if (formData.tipo_mov === TIPOS_MOVIMIENTO.ENTRADA) {
+            return razon.toLowerCase() !== 'egreso';
+          }
+          if (formData.tipo_mov === TIPOS_MOVIMIENTO.SALIDA) {
+            return razon.toLowerCase() !== 'ingreso';
+          }
+          return true;
+        })
+        .map(razon => ({
+          value: razon,
+          label: razon
+        }))}
+      error={errors.razon}
+    />
+  </div>
+  <div className="col-span-1">
+    {/* Celda vacía para completar la fila 1 */}
+  </div>
 
-          <SelectInput
-            label="Razón"
-            name="razon"
-            value={formData.razon}
-            onChange={handleChange}
-            disabled={!formData.tipo_mov}
-            options={Object.values(RAZONES_MOVIMIENTO).map(razon => ({
-              value: razon,
-              label: razon
-            }))}
-            error={errors.razon}
-          />
-
-          <SelectInput
-            label="Contacto"
-            name="id_contacto"
-            value={formData.id_contacto}
-            onChange={handleChange}
-            disabled={!formData.tipo_mov}
-            options={[
-              { value: '', label: 'Seleccione contacto' },
-              ...filteredContacts.map(group => ({
-                value: String(group.contacto.id_contacto),
-                label: group.contacto.nombre
-              }))
-            ]}
-            error={errors.id_contacto}
-          />
-
-          {/* Sección Ítems y Cantidades */}
-<div className="mb-4">
-  <label className="block text-gray-700 text-sm font-medium mb-2">
-    Ítems y Cantidades
-  </label>
-  {filteredItems.length === 0 && (
-    <p className="text-gray-500 text-sm">Seleccione un contacto para ver ítems</p>
-  )}
-  {filteredItems.map(item => {
-    // Determina si el ítem está seleccionado
-    const isSelected = formData.id_items.includes(String(item.id_item));
-    return (
-      <div key={item.id_item} className="flex items-center mb-2">
-        <input
-          type="checkbox"
-          id={`item_${item.id_item}`}
-          checked={isSelected}
-          onChange={(e) => {
-            if (e.target.checked) {
-              // Agrega el ítem a la lista de seleccionados
-              setFormData(prev => ({
-                ...prev,
-                id_items: [...prev.id_items, String(item.id_item)]
-              }));
-            } else {
-              // Quita el ítem y borra su cantidad
-              setFormData(prev => {
-                const updatedItems = prev.id_items.filter(id => id !== String(item.id_item));
-                const updatedCantidades = { ...prev.cantidades };
-                delete updatedCantidades[String(item.id_item)];
-                return {
-                  ...prev,
-                  id_items: updatedItems,
-                  cantidades: updatedCantidades
-                };
-              });
-            }
-          }}
-          className="mr-2"
-        />
-        <label htmlFor={`item_${item.id_item}`} className="mr-4">
-          {item.nombre} ({item.unidad_medida})
-        </label>
-        <input
-          type="number"
-          placeholder="Cantidad"
-          value={formData.cantidades[String(item.id_item)] || ''}
-          onChange={(e) => handleCantidadChange(String(item.id_item), e.target.value)}
-          disabled={!isSelected}
-          className={`w-24 px-2 py-1 border ${
-            isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
-          } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200`}
-        />
-        {errors[`cantidad_${item.id_item}`] && (
-          <p className="text-red-500 text-xs ml-2">{errors[`cantidad_${item.id_item}`]}</p>
-        )}
-      </div>
-    );
-  })}
-  {errors.id_items && <p className="text-red-500 text-xs mt-1">{errors.id_items}</p>}
-</div>
-
-
-          <TextInput
-            label="Detalle"
-            name="detalle"
-            value={formData.detalle}
-            onChange={handleChange}
-            error={errors.detalle}
-            placeholder="Ingrese detalles adicionales (opcional)"
-            multiline
-          />
-
-          <hr className="my-4" />
-
-          {/* Sección Documento */}
-          <SelectInput
-            label="Tipo de Documento"
-            name="tipo_documento"
-            value={formData.documento.tipo_documento}
-            onChange={handleDocumentoChange}
-            options={[
-              { value: '', label: 'Seleccione tipo de documento' },
-              ...Object.values(TIPOS_DOCUMENTO).map(tipo => ({
-                value: tipo,
-                label: tipo
-              }))
-            ]}
-            error={errors['documento.tipo_documento']}
-          />
-
-          <TextInput
-            label="Fecha del Documento"
-            name="fecha"
-            type="date"
-            value={formData.documento.fecha}
-            onChange={handleDocumentoChange}
-            error={errors['documento.fecha']}
-          />
-
-          <TextInput
-            label="Total del Documento"
-            name="total"
-            type="number"
-            value={formData.documento.total}
-            onChange={handleDocumentoChange}
-            error={errors['documento.total']}
-            placeholder="Ingrese el total"
-          />
-
-          <div className="mb-4">
-            <label htmlFor="pdf" className="block text-gray-700 text-sm font-medium mb-2">
-              Archivo PDF
-            </label>
+  {/* Fila 2 */}
+  <div className="col-span-1">
+    <SelectInput
+      label="Contacto"
+      name="id_contacto"
+      value={formData.id_contacto}
+      onChange={handleChange}
+      disabled={!formData.tipo_mov}
+      options={[
+        { value: '', label: 'Seleccione contacto' },
+        ...filteredContacts.map(group => ({
+          value: String(group.contacto.id_contacto),
+          label: group.contacto.nombre
+        }))
+      ]}
+      error={errors.id_contacto}
+    />
+  </div>
+  <div className="col-span-1">
+    {/* Ítems y Cantidades */}
+    <div className="mb-4">
+      <label className="block text-gray-700 text-sm font-medium mb-2">
+        Ítems y Cantidades
+      </label>
+      {filteredItems.length === 0 && (
+        <p className="text-gray-500 text-sm">Seleccione un contacto para ver ítems</p>
+      )}
+      {filteredItems.map(item => {
+        const isSelected = formData.id_items.includes(String(item.id_item));
+        return (
+          <div key={item.id_item} className="flex justify-between items-center mb-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id={`item_${item.id_item}`}
+                checked={isSelected}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setFormData(prev => ({
+                      ...prev,
+                      id_items: [...prev.id_items, String(item.id_item)]
+                    }));
+                  } else {
+                    setFormData(prev => {
+                      const updatedItems = prev.id_items.filter(id => id !== String(item.id_item));
+                      const updatedCantidades = { ...prev.cantidades };
+                      delete updatedCantidades[String(item.id_item)];
+                      return {
+                        ...prev,
+                        id_items: updatedItems,
+                        cantidades: updatedCantidades
+                      };
+                    });
+                  }
+                }}
+                className="mr-2"
+              />
+              <label htmlFor={`item_${item.id_item}`} className="text-sm">
+                {item.nombre} ({item.unidad_medida})
+              </label>
+            </div>
             <input
-              id="pdf"
-              type="file"
-              name="pdf"
-              accept="application/pdf"
-              onChange={handleDocumentoChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+              type="number"
+              placeholder="Cantidad"
+              value={formData.cantidades[String(item.id_item)] || ''}
+              onChange={(e) => handleCantidadChange(String(item.id_item), e.target.value)}
+              disabled={!isSelected}
+              className={`w-24 px-2 py-1 border ${
+                isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
+              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 text-right`}
             />
-            {errors['documento.pdf'] && (
-              <p className="text-red-500 text-xs mt-1">{errors['documento.pdf']}</p>
+            {errors[`cantidad_${item.id_item}`] && (
+              <p className="text-red-500 text-xs ml-2">{errors[`cantidad_${item.id_item}`]}</p>
             )}
           </div>
-        </Form>
+        );
+      })}
+      {errors.id_items && <p className="text-red-500 text-xs mt-1">{errors.id_items}</p>}
+    </div>
+  </div>
+  <div className="col-span-1">
+    <TextInput
+      label="Detalle"
+      name="detalle"
+      value={formData.detalle}
+      onChange={handleChange}
+      error={errors.detalle}
+      placeholder="Ingrese detalles adicionales (opcional)"
+      multiline
+    />
+  </div>
+
+  {/* Fila 3 */}
+  <div className="col-span-1">
+    <SelectInput
+      label="Tipo de Documento"
+      name="tipo_documento"
+      value={formData.documento.tipo_documento}
+      onChange={handleDocumentoChange}
+      options={[
+        { value: '', label: 'Seleccione tipo de documento' },
+        ...Object.values(TIPOS_DOCUMENTO).map(tipo => ({
+          value: tipo,
+          label: tipo
+        }))
+      ]}
+      error={errors['documento.tipo_documento']}
+    />
+  </div>
+  <div className="col-span-1">
+    <TextInput
+      label="Total del Documento"
+      name="total"
+      type="number"
+      value={formData.documento.total}
+      onChange={handleDocumentoChange}
+      error={errors['documento.total']}
+      placeholder="Ingrese el total"
+    />
+  </div>
+  <div className="col-span-1">
+    <TextInput
+      label="Fecha del Documento"
+      name="fecha"
+      type="date"
+      value={formData.documento.fecha}
+      onChange={handleDocumentoChange}
+      max={new Date().toISOString().split('T')[0]}
+      error={errors['documento.fecha']}
+    />
+  </div>
+
+  {/* Fila 4: PDF en la segunda columna */}
+  <div className="col-span-1"></div>
+  <div className="col-span-1">
+    <div className="mb-4">
+      <label htmlFor="pdf" className="block text-gray-700 text-sm font-medium mb-2">
+        Archivo PDF
+      </label>
+      <input
+        id="pdf"
+        type="file"
+        name="pdf"
+        accept="application/pdf"
+        onChange={handleDocumentoChange}
+        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+      />
+      {errors['documento.pdf'] && (
+        <p className="text-red-500 text-xs mt-1">{errors['documento.pdf']}</p>
+      )}
+    </div>
+  </div>
+  <div className="col-span-1"></div>
+</Form>
+
       </FormModal>
 
       <Message
