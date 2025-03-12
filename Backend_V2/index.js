@@ -7,7 +7,7 @@ const { register, login} = require('./Routes/auth.routes');
 const { usuarios, postUsuario ,putUsuarios, toggleUserStatusOrDelete } = require('./Controllers/usersController');
 const { contacto, postcontacto, deletecontacto, putcontacto, getcontactoItem, getContactosMovimiento } = require('./Controllers/ContactController');
 const { getItems, getItemsTipo, getItemsMovimiento, getItemsProveedor, createItem, updateItem, toggleItemStatus, getMateriaPrimaActivos, createOrUpdateComposition, getComposersByItem} = require('./Controllers/itemsController');
-const {getContactoItems, createContactoItem, checkRelationExists, getContactoItemsByContacto, deleteContactoItem} = require('./Controllers/ContactoItemController.js')
+const { getContactoItems, createContactoItem, checkRelationExists, getContactoItemsByContacto, deleteContactoItem, items_contactos_listos} = require('./Controllers/ContactoItemController.js')
 const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require('./Controllers/rolesController');
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
@@ -54,15 +54,10 @@ app.delete('/usuarios/:id', toggleUserStatusOrDelete);
 // ─── RUTAS CONTACTO ─────────────────────────────────────────────
 
 app.get('/contacto',contacto);
-
 app.post('/contacto',postcontacto);
-
 app.delete('/contacto/:id', deletecontacto);
-
 app.put('/contacto/:id',putcontacto);
-
 app.get('/contacto_item',getcontactoItem);
-
 app.get('/contacto_movimiento',getContactosMovimiento);
 
 // ─── RUTAS ITEM ─────────────────────────────────────────────
@@ -92,6 +87,7 @@ app.post('/contacto_item', createContactoItem);
 // Ruta para eliminar una relación específica entre un contacto y un ítem
 app.delete('/contacto_item/:id_contacto/:id_item', deleteContactoItem);
 
+app.get('/contacto_item/items_contactos_listos', items_contactos_listos)
 // ─── RUTAS ROL ─────────────────────────────────────────────
 
 // Obtener todos los roles

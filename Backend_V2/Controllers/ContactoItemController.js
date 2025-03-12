@@ -73,10 +73,95 @@ const deleteContactoItem = async (req, res) => {
     }
 };
 
+// Función para obtener los contactos e ítems listos y agrupados según el tipo de contacto
+const items_contactos_listos = async (req, res) => {
+    try {
+      const query = `
+        (
+          SELECT c.id_contacto, c.nombre AS nombre_contacto, c.tipo_contacto, c.activo AS contacto_activo,i.id_item, i.unidad_medida, i.nombre AS nombre_item, i.tipo_item, i.cantidad_actual, i.cantidad_minima, NULL AS fecha_creacion, i.activo AS item_activo
+          FROM contacto c
+          INNER JOIN contacto_item ci ON ci.id_contacto = c.id_contacto
+          INNER JOIN item i ON i.id_item = ci.id_item
+          WHERE c.activo = true AND i.activo = true AND c.tipo_contacto = 'Proveedor'
+        )
+        UNION ALL
+        (
+          SELECT c.id_contacto, c.nombre AS nombre_contacto, c.tipo_contacto, c.activo AS contacto_activo,i.id_item, i.unidad_medida, i.nombre AS nombre_item, i.tipo_item, i.cantidad_actual, i.cantidad_minima, i.fecha_creacion, i.activo AS item_activo
+          FROM contacto c  
+          CROSS JOIN item i
+          WHERE c.activo = true AND c.tipo_contacto = 'Cliente' AND i.activo = true AND i.tipo_item = 'Producto Terminado'
+        );
+      `;
+  
+      const result = await pool.query(query);
+  
+      // Mapas para agrupar contactos e ítems por tipo de contacto
+      const proveedoresMap = {};
+      const clientesMap = {};
+  
+      result.rows.forEach(row => {
+        if (row.tipo_contacto === 'Proveedor') {
+          if (!proveedoresMap[row.id_contacto]) {
+            proveedoresMap[row.id_contacto] = {
+              contacto: {
+                id_contacto: row.id_contacto,
+                nombre: row.nombre_contacto,
+                tipo_contacto: row.tipo_contacto,
+                activo: row.contacto_activo
+              },
+              items: []
+            };
+          }
+          proveedoresMap[row.id_contacto].items.push({
+            id_item: row.id_item,
+            unidad_medida: row.unidad_medida,
+            nombre: row.nombre_item,
+            tipo_item: row.tipo_item,
+            cantidad_actual: row.cantidad_actual,
+            cantidad_minima: row.cantidad_minima,
+            fecha_creacion: row.fecha_creacion,
+            activo: row.item_activo
+          });
+        } else if (row.tipo_contacto === 'Cliente') {
+          if (!clientesMap[row.id_contacto]) {
+            clientesMap[row.id_contacto] = {
+              contacto: {
+                id_contacto: row.id_contacto,
+                nombre: row.nombre_contacto,
+                tipo_contacto: row.tipo_contacto,
+                activo: row.contacto_activo
+              },
+              items: []
+            };
+          }
+          clientesMap[row.id_contacto].items.push({
+            id_item: row.id_item,
+            unidad_medida: row.unidad_medida,
+            nombre: row.nombre_item,
+            tipo_item: row.tipo_item,
+            cantidad_actual: row.cantidad_actual,
+            cantidad_minima: row.cantidad_minima,
+            fecha_creacion: row.fecha_creacion,
+            activo: row.item_activo
+          });
+        }
+      });
+  
+      const proveedores = Object.values(proveedoresMap);
+      const clientes = Object.values(clientesMap);
+  
+      res.status(200).json({ proveedores, clientes });
+    } catch (err) {
+      console.error('Error al obtener items y contactos listos:', err);
+      res.status(500).json({ message: 'Error al obtener los datos de items y contactos' });
+    }
+  };
+
 module.exports = {
     getContactoItems,
     getContactoItemsByContacto,
     checkRelationExists,
     createContactoItem,
-    deleteContactoItem
+    deleteContactoItem,
+    items_contactos_listos
 };

@@ -1,16 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import FormModal from '../common/common/Forms/FormModal';
 import Form from '../common/common/Forms/Form';
-import { TextInput, SelectInput, MultiSelectInput } from '../common/common/Forms/Imputs/index';
+import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
-import { TIPOS_MOVIMIENTO, RAZONES_MOVIMIENTO, TIPOS_DOCUMENTO, TIPOS_CONTACTOS } from '../common/common/ui/const';
-import { getFilteredContactsByMovement } from '../../utils/filterContactsByMovement';
-import { getFilteredItemData } from '../../utils/filterItems';
+import { TIPOS_MOVIMIENTO, RAZONES_MOVIMIENTO, TIPOS_DOCUMENTO } from '../common/common/ui/const';
 
-const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
+const MovimientoForm = ({
+  isOpen,
+  onClose,
+  onGuardar,
+  data 
+}) => {
   const [formData, setFormData] = useState({
-    tipo_mov: '',
+    tipo_mov: '',     
     razon: '',
     id_contacto: '',
     id_items: [],
@@ -29,35 +32,55 @@ const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState('success');
 
-  // Filtrar contactos según el tipo de movimiento usando la función externa:
-  const contactosFiltrados = formData.tipo_mov
-    ? getFilteredContactsByMovement(
-        contactos,
-        { term: '', filters: {} },
-        data => data,
-        formData.tipo_mov
-      )
-    : [];
+  // Estados locales para almacenar contactos e ítems según la selección
+  const [filteredContacts, setFilteredContacts] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
 
-  // Filtrar ítems usando la función importada.
-  // Si se ha seleccionado un contacto, se obtiene el contacto seleccionado y se filtran los ítems.
-  const itemsFiltrados = formData.id_contacto
-    ? (() => {
-        const contactoSeleccionado = contactos.find(
-          c => String(c.id_contacto) === String(formData.id_contacto)
-        );
-        if (contactoSeleccionado) {
-          if (contactoSeleccionado.tipo_contacto === TIPOS_CONTACTOS.CLIENTE) {
-            // Para cliente: filtrar ítems activos de tipo Producto Terminado
-            return getFilteredItemData(items, TIPOS_CONTACTOS.CLIENTE);
-          } else if (contactoSeleccionado.tipo_contacto === TIPOS_CONTACTOS.PROVEEDOR) {
-            // Para proveedor: filtrar ítems activos de tipo Materia Prima del proveedor seleccionado
-            return getFilteredItemData(items, TIPOS_CONTACTOS.PROVEEDOR, contactoSeleccionado.id_contacto);
-          }
-        }
-        return [];
-      })()
-    : [];
+  useEffect(() => {
+    console.log('Datos recibidos en MovimientoForm:', data);
+    alert('Datos recibidos: ' + JSON.stringify(data));
+  }, [data]);
+  
+  
+  useEffect(() => {
+    if (formData.tipo_mov === TIPOS_MOVIMIENTO.ENTRADA) {
+      setFilteredContacts(data.proveedores || []);
+    } else if (formData.tipo_mov === TIPOS_MOVIMIENTO.SALIDA) {
+      setFilteredContacts(data.clientes || []);
+    } else {
+      setFilteredContacts([]);
+    }
+    // Resetea contacto e ítems cuando cambia el movimiento
+    setFormData(prev => ({
+      ...prev,
+      id_contacto: '',
+      id_items: [],
+      cantidades: {}
+    }));
+    setFilteredItems([]);
+  }, [formData.tipo_mov, data]);
+
+  // Al seleccionar un contacto se actualiza la lista de ítems
+  useEffect(() => {
+    if (formData.id_contacto) {
+      const selectedGroup = filteredContacts.find(
+        group => String(group.contacto.id_contacto) === formData.id_contacto
+      );
+      if (selectedGroup) {
+        setFilteredItems(selectedGroup.items || []);
+      } else {
+        setFilteredItems([]);
+      }
+      // Resetea ítems seleccionados y cantidades
+      setFormData(prev => ({
+        ...prev,
+        id_items: [],
+        cantidades: {}
+      }));
+    } else {
+      setFilteredItems([]);
+    }
+  }, [formData.id_contacto, filteredContacts]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -93,7 +116,6 @@ const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Al cambiar el tipo de movimiento se reinician razón, contacto, ítems y cantidades
     if (name === 'tipo_mov') {
       setFormData(prev => ({
         ...prev,
@@ -104,7 +126,6 @@ const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
         cantidades: {}
       }));
     } else if (name === 'id_contacto') {
-      // Al cambiar el contacto se reinician ítems y cantidades
       setFormData(prev => ({
         ...prev,
         [name]: value,
@@ -196,10 +217,8 @@ const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
             onChange={handleChange}
             options={[
               { value: '', label: 'Seleccione tipo movimiento' },
-              ...Object.values(TIPOS_MOVIMIENTO).map(tipo => ({
-                value: tipo,
-                label: tipo
-              }))
+              { value: TIPOS_MOVIMIENTO.ENTRADA, label: TIPOS_MOVIMIENTO.ENTRADA },
+              { value: TIPOS_MOVIMIENTO.SALIDA, label: TIPOS_MOVIMIENTO.SALIDA }
             ]}
             error={errors.tipo_mov}
           />
@@ -225,41 +244,76 @@ const MovimientoForm = ({ isOpen, onClose, onGuardar, items, contactos }) => {
             disabled={!formData.tipo_mov}
             options={[
               { value: '', label: 'Seleccione contacto' },
-              ...contactosFiltrados.map(contacto => ({
-                value: String(contacto.id_contacto),
-                label: contacto.nombre
+              ...filteredContacts.map(group => ({
+                value: String(group.contacto.id_contacto),
+                label: group.contacto.nombre
               }))
             ]}
             error={errors.id_contacto}
           />
 
-          <MultiSelectInput
-            label="Ítems"
-            name="id_items"
-            value={formData.id_items}
-            onChange={(selectedItems) =>
-              setFormData(prev => ({ ...prev, id_items: selectedItems }))
+          {/* Sección Ítems y Cantidades */}
+<div className="mb-4">
+  <label className="block text-gray-700 text-sm font-medium mb-2">
+    Ítems y Cantidades
+  </label>
+  {filteredItems.length === 0 && (
+    <p className="text-gray-500 text-sm">Seleccione un contacto para ver ítems</p>
+  )}
+  {filteredItems.map(item => {
+    // Determina si el ítem está seleccionado
+    const isSelected = formData.id_items.includes(String(item.id_item));
+    return (
+      <div key={item.id_item} className="flex items-center mb-2">
+        <input
+          type="checkbox"
+          id={`item_${item.id_item}`}
+          checked={isSelected}
+          onChange={(e) => {
+            if (e.target.checked) {
+              // Agrega el ítem a la lista de seleccionados
+              setFormData(prev => ({
+                ...prev,
+                id_items: [...prev.id_items, String(item.id_item)]
+              }));
+            } else {
+              // Quita el ítem y borra su cantidad
+              setFormData(prev => {
+                const updatedItems = prev.id_items.filter(id => id !== String(item.id_item));
+                const updatedCantidades = { ...prev.cantidades };
+                delete updatedCantidades[String(item.id_item)];
+                return {
+                  ...prev,
+                  id_items: updatedItems,
+                  cantidades: updatedCantidades
+                };
+              });
             }
-            disabled={!formData.id_contacto}
-            options={itemsFiltrados.map(item => ({
-              value: String(item.id_item),
-              label: `${item.nombre} (${item.unidad_medida})`
-            }))}
-            error={errors.id_items}
-          />
+          }}
+          className="mr-2"
+        />
+        <label htmlFor={`item_${item.id_item}`} className="mr-4">
+          {item.nombre} ({item.unidad_medida})
+        </label>
+        <input
+          type="number"
+          placeholder="Cantidad"
+          value={formData.cantidades[String(item.id_item)] || ''}
+          onChange={(e) => handleCantidadChange(String(item.id_item), e.target.value)}
+          disabled={!isSelected}
+          className={`w-24 px-2 py-1 border ${
+            isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
+          } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200`}
+        />
+        {errors[`cantidad_${item.id_item}`] && (
+          <p className="text-red-500 text-xs ml-2">{errors[`cantidad_${item.id_item}`]}</p>
+        )}
+      </div>
+    );
+  })}
+  {errors.id_items && <p className="text-red-500 text-xs mt-1">{errors.id_items}</p>}
+</div>
 
-          {formData.id_items.map(id_item => (
-            <TextInput
-              key={id_item}
-              label={`Cantidad para ${items.find(item => String(item.id_item) === id_item)?.nombre || ''}`}
-              name={`cantidad_${id_item}`}
-              type="number"
-              value={formData.cantidades[id_item] || ''}
-              onChange={(e) => handleCantidadChange(id_item, e.target.value)}
-              error={errors[`cantidad_${id_item}`]}
-              placeholder="Ingrese la cantidad"
-            />
-          ))}
 
           <TextInput
             label="Detalle"
@@ -341,8 +395,10 @@ MovimientoForm.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onGuardar: PropTypes.func.isRequired,
-  items: PropTypes.array.isRequired,
-  contactos: PropTypes.array.isRequired
+  data: PropTypes.shape({
+    proveedores: PropTypes.array.isRequired,
+    clientes: PropTypes.array.isRequired
+  }).isRequired
 };
 
 export default MovimientoForm;

@@ -6,7 +6,6 @@ const useContactoItem = () => {
 
     // Función para extraer el id_contacto correctamente
     const extractIdContacto = (id_contacto) => {
-        console.log('extractIdContacto - Recibido:', id_contacto);
         if (typeof id_contacto === 'object' && id_contacto !== null) {
             const extracted = id_contacto.id_contacto; // Si es un objeto, extrae el id_contacto
             console.log('extractIdContacto - Extraído:', extracted);
@@ -15,7 +14,7 @@ const useContactoItem = () => {
         console.log('extractIdContacto - Valor directo:', id_contacto);
         return id_contacto; // Si ya es un número, lo devuelve directamente
     };
-
+    //Fncion para obtener contactos por id
     const getContactoItemsByContacto = async (id_contacto) => {
         setLoading(true);
         console.log('getContactoItemsByContacto - Iniciado con id_contacto:', id_contacto);
@@ -40,12 +39,9 @@ const useContactoItem = () => {
             setLoading(false);
         }
     };
-
+    //Funcion para guardar el contacto 
     const handleGuardarContactoItem = async (id_contacto, selectedItems) => {
       setLoading(true);
-      console.log('handleGuardarContactoItem - Iniciado con id_contacto:', id_contacto);
-      console.log('handleGuardarContactoItem - selectedItems recibido:', selectedItems);
-      
       // Si selectedItems es nulo o undefined, intenta extraer id_item desde el objeto id_contacto (si existe)
       if (!Array.isArray(selectedItems)) {
           if (id_contacto && id_contacto.id_item) {
@@ -117,14 +113,32 @@ const useContactoItem = () => {
       } finally {
           setLoading(false);
       }
+    };
+        // Función que llama a la ruta que devuelve los contactos e ítems ya listos (agrupados)
+    const handleObtenerItemsYContactosListos = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/contacto_item/items_contactos_listos');
+      if (!response.ok) {
+        throw new Error('Error al obtener los datos de contacto e ítems');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      setError(error.message);
+      console.error('handleObtenerItemsYContactosListos:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
-  
 
     return {
         loading,
         error,
         getContactoItemsByContacto,
         handleGuardarContactoItem,
+        handleObtenerItemsYContactosListos
     };
 };
 

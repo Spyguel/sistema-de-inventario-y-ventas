@@ -4,24 +4,22 @@ import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
 import MovimientoForm from '../components/Modals/MovimientoForm.jsx';
 import useFetchMovimientos from '../hooks/useFetchMovimientos.js';
-import useContactos from '../hooks/useContactos.js';
-import useItems from '../hooks/useItems.js';
+import useContactoItem from '../hooks/useContactoItem.js';
 import useUsuario from '../hooks/useUsuarios.js';
 import { getFilteredMovimientosData } from '../utils/filterMovimientos';
 
 function Movimientos() {
   const { usuario, loading: usuarioLoading, error: usuarioError } = useUsuario();
-  const { items } = useItems();
-  const { contactos } = useContactos();
+  const { loading: loadingCI, error: errorCI, handleObtenerItemsYContactosListos } = useContactoItem();
   const { movimientos, handleGuardarMovimiento, handleToggleActive } = useFetchMovimientos();
 
-  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Función genérica de filtrado para movimientos
+  const [datosListos, setDatosListos] = useState({ proveedores: [], clientes: [] });
+
+  // Función de filtrado para movimientos
   const filterData = (data, term) => {
-    return data.filter(movimiento => 
+    return data.filter(movimiento =>
       movimiento.id_movimiento.toString().includes(term) ||
       movimiento.tipo_mov.toLowerCase().includes(term.toLowerCase()) ||
       movimiento.razon.toLowerCase().includes(term.toLowerCase()) ||
@@ -30,12 +28,21 @@ function Movimientos() {
   };
 
   const searchConfig = { term: searchTerm };
-
-  // Se aplican los filtros del utils para movimientos
   const movimientosFiltrados = getFilteredMovimientosData(movimientos, searchConfig, filterData);
 
   const handleSearch = (term) => setSearchTerm(term);
-  const openForm = () => setIsFormOpen(true);
+  const openForm = async () => {
+    setIsFormOpen(true);
+    try{
+      const data = await handleObtenerItemsYContactosListos();
+      setDatosListos(data)
+      console.log("Datos que se pasan al formulario:", data);
+      alert("Verifica la consola para los datos enviados al formulario");
+    }
+    catch (error){
+      console.log(error);
+    }
+  } 
   const closeForm = () => setIsFormOpen(false);
 
   const handleGuardar = async (movimientoData) => {
@@ -46,15 +53,18 @@ function Movimientos() {
     closeForm();
   };
 
-  if (usuarioLoading) return <div>Cargando usuario...</div>;
+  
+
+  if (usuarioLoading || loadingCI) return <div>Cargando datos...</div>;
   if (usuarioError) return <div>Error: {usuarioError}</div>;
+  if (errorCI) return <div>Error: {errorCI}</div>;
 
   return (
     <div className="h-full ml-10 p-4">
       <div className="rounded-lg shadow-lg p-4 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
         <p className="text-sm text-gray-500 mb-4">Administra los movimientos de inventario</p>
-        
+
         <div className="flex justify-end mb-4">
           <Button
             variant="success"
@@ -78,12 +88,12 @@ function Movimientos() {
         </div>
       </div>
 
+      {/* Se pasan los datos ya listos al formulario */}
       <MovimientoForm
         isOpen={isFormOpen}
         onClose={closeForm}
         onGuardar={handleGuardar}
-        items={items}
-        contactos={contactos}
+        data={datosListos}
       />
     </div>
   );
