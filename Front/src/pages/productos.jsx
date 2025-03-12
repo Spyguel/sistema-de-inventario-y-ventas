@@ -56,37 +56,49 @@ function Productos() {
   };
 
   return (
-    <div className="h-[100%] ml-10 p-4">
-      <div className="rounded-lg shadow-lg p-6 h-[95%]">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
-        <p className="text-sm text-gray-500 mb-4">
-          Administra los productos y materias primas
-        </p>
-        <div className="flex justify-end mb-4">
-          <Button 
-            onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }} 
-            variant="success"
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
-          >
-            + Agregar Producto
-          </Button>
+      <div className="h-[100%] ml-10 p-4 flex flex-col"> {/* Contenedor principal */}
+        <div className="h-[100%] rounded-lg shadow-lg p-6 flex-1 flex flex-col"> {/* Contenedor secundario */}
+          {/* Encabezado */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Administra los productos y materias primas
+            </p>
+          </div>
+    
+          {/* Botón de Agregar Producto */}
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }}
+              variant="success"
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition"
+            >
+              + Agregar Producto
+            </Button>
+          </div>
+    
+          {/* Barra de Búsqueda */}
+          <BarraBusqueda onSearch={handleSearch} placeholder="Buscar productos..." />
+    
+          {/* Contenedor de la Tabla */}
+          <div className="mt-4 flex-1 flex flex-col overflow-hidden"> {/* Contenedor flexible */}
+            {loading ? (
+              <p>Cargando productos...</p>
+            ) : error ? (
+              <p className="text-red-500">{error}</p>
+            ) : (
+              <div className="flex-1 overflow-auto"> {/* Contenedor para la tabla */}
+                <ProductTable
+                  productos={productosFiltrados}
+                  onEdit={handleEditarProducto}
+                  onAddComponent={handleAddComponent}
+                  onToggleActive={handleToggle}
+                  className="w-full h-full" // Asegura que la tabla ocupe todo el espacio
+                />
+              </div>
+            )}
+          </div>
         </div>
-        <BarraBusqueda onSearch={handleSearch} placeholder="Buscar productos..." />
-        <div className="mt-4 flex-1 overflow-auto">
-          {loading ? (
-            <p>Cargando productos...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
-          ) : (
-            <ProductTable 
-              productos={productosFiltrados} 
-              onEdit={handleEditarProducto}
-              onAddComponent={handleAddComponent} 
-              onToggleActive={handleToggle}
-            />
-          )}
-        </div>
-      </div>
 
       <ProductForm 
         isOpen={modalAbierto} 

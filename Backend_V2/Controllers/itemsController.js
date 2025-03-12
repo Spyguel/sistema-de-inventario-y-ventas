@@ -108,7 +108,7 @@ const updateItem = async (req, res) => {
   try {
     const { id } = req.params;
     // Extraemos los campos enviados; si falta alguno, se toman los valores actuales de la base de datos
-    const { unidad_medida, nombre, tipo_item, cantidad_minima, id_composicion } = req.body;
+    const { unidad_medida, nombre, tipo_item, cantidad_minima } = req.body;
     
     // Primero obtenemos el item actual
     const currentResult = await pool.query('SELECT * FROM public.item WHERE id_item = $1', [id]);
@@ -120,14 +120,13 @@ const updateItem = async (req, res) => {
     // Actualizamos usando los valores nuevos o los actuales
     const result = await pool.query(
       `UPDATE public.item 
-       SET unidad_medida = $1, nombre = $2, tipo_item = $3, cantidad_minima = $4, id_composicion = $5
-       WHERE id_item = $6 RETURNING *`,
+       SET unidad_medida = $1, nombre = $2, tipo_item = $3, cantidad_minima = $4 
+       WHERE id_item = $5 RETURNING *`,
       [
         unidad_medida || currentItem.unidad_medida,
         nombre || currentItem.nombre,
         tipo_item || currentItem.tipo_item,
         cantidad_minima !== undefined ? cantidad_minima : currentItem.cantidad_minima,
-        id_composicion || currentItem.id_composicion,
         id
       ]
     );

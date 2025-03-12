@@ -3,47 +3,45 @@ import PropTypes from 'prop-types';
 
 const Tabla = ({ headers, data, onSort, renderActions }) => {
   return (
-    <div className="h-[100%] flex-grow rounded-lg shadow-lg m-3 ">
-      <div className="">
-        <div className="overflow-auto max-h-[35vh]">
-          <table className="w-full bg-background rounded-lg" aria-label="Tabla General">
-            <thead className="sticky top-0 z-10">
-              <tr className="bg-tableHeader  text-white">
-                {headers.map((header, index) => (
-                  <th 
-                    key={index} 
-                    className="p-2 cursor-pointer hover:bg-slate-500" 
-                    onClick={() => onSort(header.key)}
-                  >
-                    {header.label}
-                  </th>
-                ))}
-                <th className="p-2">Acciones</th>
+    <div className="h-full flex flex-col rounded-lg shadow-lg"> {/* Contenedor flexible */}
+      <div className="overflow-auto flex-1"> {/* Contenedor de la tabla */}
+        <table className="w-full bg-background rounded-lg" aria-label="Tabla General">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-tableHeader text-white">
+              {headers.map((header, index) => (
+                <th 
+                  key={index} 
+                  className="p-2 cursor-pointer hover:bg-slate-500" 
+                  onClick={() => onSort(header.key)}
+                >
+                  {header.label}
+                </th>
+              ))}
+              <th className="p-2">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.length === 0 ? (
+              <tr>
+                <td colSpan={headers.length + 1} className="p-2 text-center">No hay datos disponibles</td>
               </tr>
-            </thead>
-            <tbody>
-              {data.length === 0 ? (
-                <tr>
-                  <td colSpan={headers.length + 1} className="p-2 text-center">No hay datos disponibles</td>
+            ) : (
+              data.map((item, index) => (
+                <tr 
+                  key={index} 
+                  className="hover:bg-gray-400 transition-colores text-center"
+                >
+                  {Object.values(item).map((value, idx) => (
+                    <td key={idx} className="p-2 text-center">{value}</td>
+                  ))}
+                  <td className="p-2 text-center flex justify-center space-x-2">
+                    {renderActions(item)}
+                  </td>
                 </tr>
-              ) : (
-                data.map((item, index) => (
-                  <tr 
-                    key={index} 
-                    className="hover:bg-gray-400 transition-colores text-center"
-                  >
-                    {Object.values(item).map((value, idx) => (
-                      <td key={idx} className="p-2 text-center">{value}</td>
-                    ))}
-                    <td className="p-2 text-center flex justify-center space-x-2">
-                      {renderActions(item)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
