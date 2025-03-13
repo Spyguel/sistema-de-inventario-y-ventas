@@ -9,6 +9,7 @@ import useItems from '../hooks/useItems';
 import useContactoItem from '../hooks/useContactoItem';
 import { getFilteredProveedoresData } from '../utils/filterProveedores';
 import Message from '../components/common/common/Messages/Message.jsx';
+import LoadingScreen from '../components/LoadingScreen.jsx'; // Importar componente de carga
 
 function Proveedores() {
   const { 
@@ -18,7 +19,8 @@ function Proveedores() {
     handleEliminarProveedor, 
     handleToggleEstado,
     message,
-    closeMessage
+    closeMessage,
+    loading  // Asegúrate de que tu hook devuelva este estado
   } = useFetchContacto();
 
   const { searchConfig, handleSearch, filterData } = useSearch();
@@ -55,6 +57,9 @@ function Proveedores() {
 
   return (
     <div className="h-[100%] ml-10 p-4">
+      {/* Pantalla de carga */}
+      {loading && <LoadingScreen />}
+
       <div className="rounded-lg shadow-lg p-6 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Proveedores</h2>
         <p className="text-sm text-gray-500 mb-4">Administra los proveedores en el sistema</p>
@@ -76,19 +81,21 @@ function Proveedores() {
         />
 
         <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
-          <ProveedoresTable
-            proveedores={filteredProveedores}
-            items={items}
-            fetchItemProveedor={fetchItemProveedor}
-            onGuardarItems={handleAsignarItems}
-            onEdit={(proveedor) => {
-              setSelectedItems(prev => ({ ...prev, proveedor }));
-              handleOpenModal('proveedor');
-            }}
-            onDelete={(id) => handleEliminarProveedor(id, fetchProveedores)}
-            onToggleEstado={(id) => handleToggleEstado(id, proveedores, fetchProveedores)}
-            onObtenerItemsProveedor={handleObtenerItemsProveedor}
-          />
+          {!loading && (  // Ocultar tabla mientras carga
+            <ProveedoresTable
+              proveedores={filteredProveedores}
+              items={items}
+              fetchItemProveedor={fetchItemProveedor}
+              onGuardarItems={handleAsignarItems}
+              onEdit={(proveedor) => {
+                setSelectedItems(prev => ({ ...prev, proveedor }));
+                handleOpenModal('proveedor');
+              }}
+              onDelete={(id) => handleEliminarProveedor(id, fetchProveedores)}
+              onToggleEstado={(id) => handleToggleEstado(id, proveedores, fetchProveedores)}
+              onObtenerItemsProveedor={handleObtenerItemsProveedor}
+            />
+          )}
         </div>
       </div>
 
@@ -102,7 +109,6 @@ function Proveedores() {
         />
       )}
 
-      {/* Renderizar el componente Message */}
       <Message
         isOpen={message.isOpen}
         onClose={closeMessage}

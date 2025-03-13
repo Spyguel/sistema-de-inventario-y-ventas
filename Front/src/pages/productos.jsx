@@ -5,6 +5,7 @@ import ProductForm from '../components/Modals/ProductForm';
 import ProductComponentForm from '../components/Modals/ProductComponentForm.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda';
 import useFetchProductos from '../hooks/useFetchItems.js';
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 function Productos() {
   const { 
@@ -57,6 +58,7 @@ function Productos() {
 
   return (
     <div className="h-[100%] ml-10 p-4">
+      {loading && <LoadingScreen />}
       <div className="rounded-lg shadow-lg p-6 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
         <p className="text-sm text-gray-500 mb-4">
@@ -73,18 +75,16 @@ function Productos() {
         </div>
         <BarraBusqueda onSearch={handleSearch} placeholder="Buscar productos..." />
         <div className="mt-4 flex-1 overflow-auto">
-          {loading ? (
-            <p>Cargando productos...</p>
-          ) : error ? (
-            <p className="text-red-500">{error}</p>
-          ) : (
-            <ProductTable 
-              productos={productosFiltrados} 
-              onEdit={handleEditarProducto}
-              onAddComponent={handleAddComponent} 
-              onToggleActive={handleToggle}
-            />
-          )}
+        {error ? (
+                        <p className="text-red-500">{error}</p>
+                    ) : (
+                        <ProductTable 
+                            productos={productosFiltrados} 
+                            onEdit={handleEditarProducto}
+                            onAddComponent={handleAddComponent} 
+                            onToggleActive={handleToggle}
+                        />
+                    )}
         </div>
       </div>
 

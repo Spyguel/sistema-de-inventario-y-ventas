@@ -1,4 +1,3 @@
-// Clientes.js
 import Button from '../components/common/button.jsx';
 import ClientesTable from '../components/Tablas/ClientesTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
@@ -7,9 +6,18 @@ import useSearch from '../hooks/useSearch';
 import useFetchContacto from '../hooks/useFetchContacto.js';
 import useModals from '../hooks/useModals';
 import { getFilteredClientesData } from '../utils/filterClientes';
+import LoadingScreen from '../components/LoadingScreen.jsx'; // Importar componente de carga
 
 function Clientes() {
-    const { clientes, fetchClientes, handleGuardarContacto, handleEliminarCliente, handleToggleEstado } = useFetchContacto();
+    const { 
+        clientes, 
+        fetchClientes, 
+        handleGuardarContacto, 
+        handleEliminarCliente, 
+        handleToggleEstado,
+        loading // Asegúrate de que tu hook devuelva este estado
+    } = useFetchContacto();
+    
     const { searchConfig, handleSearch, filterData } = useSearch();
     const { modals, selectedItems, setSelectedItems, handleOpenModal, handleCloseModal, handleAddButton } = useModals();
 
@@ -25,6 +33,9 @@ function Clientes() {
 
     return (
         <div className="h-[100%] ml-10 p-4">
+            {/* Pantalla de carga */}
+            {loading && <LoadingScreen />}
+
             <div className="rounded-lg shadow-lg p-6 h-[95%]">
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Clientes</h2>
                 <p className="text-sm text-gray-500 mb-4">Administra los clientes en el sistema</p>
@@ -46,15 +57,17 @@ function Clientes() {
                 />
 
                 <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
-                    <ClientesTable
-                        clientes={filteredClientes}
-                        onEdit={(cliente) => {
-                            setSelectedItems(prev => ({ ...prev, cliente }));
-                            handleOpenModal('cliente');
-                        }}
-                        onDelete={handleEliminarClienteCallback}
-                        onToggleEstado={handleToggleEstadoCallback}
-                    />
+                    {!loading && ( // Ocultar tabla mientras carga
+                        <ClientesTable
+                            clientes={filteredClientes}
+                            onEdit={(cliente) => {
+                                setSelectedItems(prev => ({ ...prev, cliente }));
+                                handleOpenModal('cliente');
+                            }}
+                            onDelete={handleEliminarClienteCallback}
+                            onToggleEstado={handleToggleEstadoCallback}
+                        />
+                    )}
                 </div>
             </div>
 
