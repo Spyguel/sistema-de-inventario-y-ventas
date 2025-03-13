@@ -58,12 +58,15 @@ function Productos() {
 
   return (
     <div className="h-[100%] ml-10 p-4">
+      {/* Pantalla de carga */}
       {loading && <LoadingScreen />}
+
       <div className="rounded-lg shadow-lg p-6 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Productos</h2>
         <p className="text-sm text-gray-500 mb-4">
           Administra los productos y materias primas
         </p>
+        
         <div className="flex justify-end mb-4">
           <Button 
             onClick={() => { setProductoSeleccionado(null); setModalAbierto(true); }} 
@@ -73,21 +76,24 @@ function Productos() {
             + Agregar Producto
           </Button>
         </div>
+        
         <BarraBusqueda onSearch={handleSearch} placeholder="Buscar productos..." />
+        
         <div className="mt-4 flex-1 overflow-auto">
-        {error ? (
-                        <p className="text-red-500">{error}</p>
-                    ) : (
-                        <ProductTable 
-                            productos={productosFiltrados} 
-                            onEdit={handleEditarProducto}
-                            onAddComponent={handleAddComponent} 
-                            onToggleActive={handleToggle}
-                        />
-                    )}
+          {error ? (
+            <p className="text-red-500">{error}</p>
+          ) : (
+            <ProductTable 
+              productos={productosFiltrados} 
+              onEdit={handleEditarProducto}
+              onAddComponent={handleAddComponent} 
+              onToggleActive={handleToggle}
+            />
+          )}
         </div>
       </div>
 
+      {/* Modales */}
       <ProductForm 
         isOpen={modalAbierto} 
         onClose={() => { setModalAbierto(false); setProductoSeleccionado(null); }}
