@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Button from '../components/common/button.jsx';
 import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
