@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '../components/common/button.jsx';
 import MovimientosTable from '../components/Tablas/MovimientosTable.jsx';
 import BarraBusqueda from '../components/common/BarraBusqueda.jsx';
@@ -17,43 +17,47 @@ function Movimientos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [datosListos, setDatosListos] = useState({ proveedores: [], clientes: [] });
 
-  // Función de filtrado para movimientos
+  // Función de filtrado corregida
   const filterData = (data, term) => {
-    return data.filter(movimiento =>
-      movimiento.id_movimiento.toString().includes(term) ||
-      movimiento.tipo_mov.toLowerCase().includes(term.toLowerCase()) ||
-      movimiento.razon.toLowerCase().includes(term.toLowerCase()) ||
-      movimiento.detalle.toLowerCase().includes(term.toLowerCase())
-    );
+    return data.filter(movimiento => {
+      const searchText = term.toLowerCase();
+      return (
+        movimiento.ID?.toString().includes(searchText) ||
+        (movimiento.Tipo?.toLowerCase() || '').includes(searchText) ||
+        (movimiento.Razón?.toLowerCase() || '').includes(searchText) ||
+        (movimiento.Detalle?.toLowerCase() || '').includes(searchText)
+      );
+    });
   };
 
   const searchConfig = { term: searchTerm };
   const movimientosFiltrados = getFilteredMovimientosData(movimientos, searchConfig, filterData);
 
   const handleSearch = (term) => setSearchTerm(term);
+  
   const openForm = async () => {
     setIsFormOpen(true);
-    try{
+    try {
       const data = await handleObtenerItemsYContactosListos();
-      setDatosListos(data)
-      console.log("Datos que se pasan al formulario:", data);
-      alert("Verifica la consola para los datos enviados al formulario");
+      setDatosListos(data);
+    } catch (error) {
+      console.error('Error al obtener datos:', error);
     }
-    catch (error){
-      console.log(error);
-    }
-  } 
+  };
+
   const closeForm = () => setIsFormOpen(false);
 
   const handleGuardar = async (movimientoData) => {
-    await handleGuardarMovimiento({
-      ...movimientoData,
-      id_usuario: usuario.userId
-    });
-    closeForm();
+    try {
+      await handleGuardarMovimiento({
+        ...movimientoData,
+        id_usuario: usuario.userId
+      });
+      closeForm();
+    } catch (error) {
+      console.error('Error al guardar movimiento:', error);
+    }
   };
-
-  
 
   if (usuarioLoading || loadingCI) return <div>Cargando datos...</div>;
   if (usuarioError) return <div>Error: {usuarioError}</div>;
@@ -63,8 +67,7 @@ function Movimientos() {
     <div className="h-screen ml-10 p-4">
       <div className="rounded-lg shadow-lg p-4 h-[95%]">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Gestión de Movimientos</h2>
-        <p className="text-sm text-gray-500 mb-4">Administra los movimientos de inventario</p>
-
+        
         <div className="flex justify-end mb-4">
           <Button
             variant="success"
@@ -77,10 +80,10 @@ function Movimientos() {
 
         <BarraBusqueda
           onSearch={handleSearch}
-          placeholder="Buscar movimientos..."
+          placeholder="Buscar por ID, tipo o razón..."
         />
 
-        <div className="mt-4 border border-gray-200 rounded-lg h-[60%]">
+        <div className="mt-4 border border-gray-200 rounded-lg h-[60%] overflow-auto">
           <MovimientosTable
             movimientos={movimientosFiltrados}
             onToggleActive={handleToggleActive}
@@ -88,7 +91,6 @@ function Movimientos() {
         </div>
       </div>
 
-      {/* Se pasan los datos ya listos al formulario */}
       <MovimientoForm
         isOpen={isFormOpen}
         onClose={closeForm}

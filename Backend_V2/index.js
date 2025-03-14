@@ -12,7 +12,7 @@ const { roles, postroles, putroles, deleteroles, postAgregarPermiso } = require(
 const { Permisos , PostPermisos, PutPermisos, DeletePermisos } = require('./Controllers/permisosController');
 const { Rolper, postRolPer} = require('./Controllers/rolPermisoController');
 const { UsuarioRol} = require('./Controllers/usersRolController');
-const { Movimientos, toggleMovStatus } = require('./Controllers/movimientosController.js');
+const { Movimientos, toggleMovStatus, createMovimiento } = require('./Controllers/movimientosController.js');
 
 pool.connect()
   .then(client => {
@@ -135,6 +135,7 @@ app.use('/auth', router);
 // ─── RUTAS DE MOVIMIENTOS ─────────────────────────────────────────────
 app.get('/movimientos', Movimientos);
 app.delete('/movimientos/:id', toggleMovStatus);
+app.post('/movimientos', createMovimiento);
 
 
 // Configuración del servidor

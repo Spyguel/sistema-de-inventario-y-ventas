@@ -1,4 +1,3 @@
-// MovimientosTable.js
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/solid';
@@ -21,30 +20,25 @@ const MovimientosTable = ({
     setShowDetalleModal(true);
   };
 
-  const handleToggleActive = (ID_movimiento) => {
-    onToggleActive(ID_movimiento);
-  };
-
   const headers = [
-    { key: 'ID_movimiento', label: 'ID' },
-    { key: 'fecha', label: 'Fecha' },
-    { key: 'usuario.email', label: 'Usuario' },
-    { key: 'contacto.nombre', label: 'Contacto' },
-    { key: 'item.nombre', label: 'Item' },
-    { key: 'tipo_mov', label: 'Tipo' },
-    { key: 'cantidad', label: 'Cantidad' },
-    { key: 'estado', label: 'Estado' },
-    { key: 'razon', label: 'Razón' },
-    { key: 'detalle', label: 'Detalle' },
-    { key: 'documento.tipo_documento', label: 'Tipo Documento' }, // Nuevo campo
-    { key: 'documento.total', label: 'Total Documento' } // Nuevo campo
+    { key: 'ID', label: 'ID' },
+    { key: 'Fecha', label: 'Fecha' },
+    { key: 'Usuario', label: 'Usuario' },
+    { key: 'Contacto', label: 'Contacto' },
+    { key: 'Item', label: 'Item' },
+    { key: 'Tipo', label: 'Tipo' },
+    { key: 'Cantidad', label: 'Cantidad' },
+    { key: 'Razón', label: 'Razón' },
+    { key: 'Detalle', label: 'Detalle' }
   ];
 
-  // Transformamos la fecha y agregamos el estado (ya vienen los joins realizados)
   const movimientosTransformados = movimientos.map(movimiento => ({
     ...movimiento,
-    fecha: movimiento.fecha ? format(new Date(movimiento.fecha), 'dd/MM/yyyy HH:mm') : 'N/A',
-    estado: movimiento.activo ? 'Activo' : 'Inactivo'
+    Fecha: movimiento.Fecha ? format(new Date(movimiento.Fecha), 'dd/MM/yyyy HH:mm') : 'N/A',
+    Contacto: movimiento.Contacto || 'Sin contacto',
+    Item: movimiento.Item || 'N/A',
+    Razón: movimiento.Razón || 'N/A',
+    Detalle: movimiento.Detalle || 'N/A'
   }));
 
   const getTipoBadgeColor = (tipo) => {
@@ -60,39 +54,48 @@ const MovimientosTable = ({
     }
   };
 
-  // Renderizado personalizado para celdas
   const renderCell = (movimiento, header) => {
-    if (header.key === 'tipo_mov') {
-      return (
-        <Badge
-          color={getTipoBadgeColor(movimiento.tipo_mov)}
-          text={movimiento.tipo_mov}
-        />
-      );
+    switch (header.key) {
+      case 'Tipo':
+        return (
+          <Badge
+            color={getTipoBadgeColor(movimiento.Tipo)}
+            text={movimiento.Tipo}
+          />
+        );
+      
+      case 'Cantidad':
+        return `${movimiento.Cantidad} u.`;
+
+      default:
+        return movimiento[header.key];
     }
-    return null; // Para las demás celdas se usa el renderizado predeterminado
   };
 
+  // Versión original de los botones de acción
   const renderActions = (movimiento) => (
-    <div className="flex space-x-2">
+    <div className="flex gap-2">
       <Button
         onClick={() => handleViewDetails(movimiento)}
         variant="secondary"
         size="sm"
         title="Ver detalles"
+        className="px-2 py-1"
       >
-        <EyeIcon className="h-4 w-4" />
+        <EyeIcon className="h-5 w-5" />
       </Button>
+      
       <Button
-        onClick={() => handleToggleActive(movimiento.ID_movimiento)}
+        onClick={() => onToggleActive(movimiento.ID)}
         variant={movimiento.activo ? 'danger' : 'success'}
         size="sm"
-        title={movimiento.activo ? 'Desactivar movimiento' : 'Activar movimiento'}
+        title={movimiento.activo ? 'Desactivar' : 'Activar'}
+        className="px-2 py-1"
       >
         {movimiento.activo ? (
-          <EyeSlashIcon className="h-4 w-4" />
+          <EyeSlashIcon className="h-5 w-5" />
         ) : (
-          <EyeIcon className="h-4 w-4" />
+          <EyeIcon className="h-5 w-5" />
         )}
       </Button>
     </div>
@@ -108,8 +111,10 @@ const MovimientosTable = ({
         renderCell={renderCell}
         emptyMessage="No hay movimientos registrados"
         className="w-full"
+        keyField="ID"
+        actionsHeader="Acciones"
       />
-      
+
       {showDetalleModal && selectedMovimiento && (
         <MovimientoDetalleModal
           isOpen={showDetalleModal}
@@ -123,26 +128,16 @@ const MovimientosTable = ({
 
 MovimientosTable.propTypes = {
   movimientos: PropTypes.arrayOf(PropTypes.shape({
-    ID_movimiento: PropTypes.number.isRequired,
-    fecha: PropTypes.string.isRequired,
-    usuario: PropTypes.shape({
-      email: PropTypes.string.isRequired,
-    }).isRequired,
-    contacto: PropTypes.shape({
-      nombre: PropTypes.string.isRequired,
-    }),
-    item: PropTypes.shape({
-      nombre: PropTypes.string.isRequired,
-    }).isRequired,
-    cantidad: PropTypes.number.isRequired,
-    tipo_mov: PropTypes.string.isRequired,
+    ID: PropTypes.number.isRequired,
+    Fecha: PropTypes.string,
+    Usuario: PropTypes.string.isRequired,
+    Contacto: PropTypes.string,
+    Item: PropTypes.string,
+    Tipo: PropTypes.string.isRequired,
+    Cantidad: PropTypes.number.isRequired,
     activo: PropTypes.bool.isRequired,
-    razon: PropTypes.string,
-    detalle: PropTypes.string,
-    documento: PropTypes.shape({ // Nuevo campo
-      tipo_documento: PropTypes.string,
-      total: PropTypes.number
-    })
+    Razón: PropTypes.string,
+    Detalle: PropTypes.string
   })).isRequired,
   onToggleActive: PropTypes.func.isRequired,
   requestSort: PropTypes.func
