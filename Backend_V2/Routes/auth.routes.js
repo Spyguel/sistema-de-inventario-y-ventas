@@ -67,7 +67,8 @@ const login = async (req, res) => {
     res.json({ 
       message: 'Autenticación exitosa', 
       token, 
-      rol: user.rol_nombre 
+      rol: user.rol_nombre ,
+      userId: user.ID_usuario
     });
   } catch (error) {
     console.error(error);

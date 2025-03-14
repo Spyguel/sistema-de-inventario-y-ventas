@@ -24,27 +24,28 @@ function useFetchMovimientos() {
   }, []);
 
   const handleGuardarMovimiento = async (movimientoData) => {
-    console.log("Los datos que llegan hasta movimientoData", movimientoData)
+    console.log("Los datos que llegan hasta movimientoData", movimientoData);
+  
     try {
       const url = movimientoData.ID_movimiento
-        ? `http://localhost:3000/movimientos/${movimientoData.ID_movimiento}` // Actualizar movimiento
+        ? `http://localhost:3000/movimientos/${movimientoData.ID_movimiento}` // Actualizar movimiento (si aplica)
         : 'http://localhost:3000/movimientos'; // Crear nuevo movimiento
-
+  
       const method = movimientoData.ID_movimiento ? 'PUT' : 'POST';
-
+  
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(movimientoData),
+        body: JSON.stringify(movimientoData)
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al guardar el movimiento');
       }
-
+  
       // Recargar la lista de movimientos tras guardar
       fetchMovimientos();
     } catch (error) {
@@ -52,6 +53,7 @@ function useFetchMovimientos() {
       throw error;
     }
   };
+  
 
   const handleToggleActive = async (id) => {
     try {

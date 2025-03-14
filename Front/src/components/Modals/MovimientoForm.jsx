@@ -201,9 +201,8 @@ const MovimientoForm = ({
   const logFormData = (formData) => {
     console.groupCollapsed('[MovimientoForm] Datos del formulario enviados');
     console.log('Tipo Movimiento:', formData.tipo_mov);
-    console.log('Razón:', formData.razon);
+    console.log('razon:', formData.razon);
     console.log('ID Contacto:', formData.id_contacto);
-    console.log('Detalle:', formData.detalle);
     console.log()
     console.log('Items y Cantidades:');
     formData.id_items.forEach(id_item => {
@@ -222,7 +221,9 @@ const MovimientoForm = ({
     console.log('-- Fecha:', formData.documento.fecha);
     console.log('-- Total:', formData.documento.total);
     console.log('-- PDF:', formData.documento.pdf ? formData.documento.pdf.name : 'Ningún archivo seleccionado');
-    
+    console.log("");
+
+    console.log("Detalle", formData.detalle)
     console.groupEnd();
   };
 

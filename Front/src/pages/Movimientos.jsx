@@ -9,7 +9,7 @@ import useUsuario from '../hooks/useUsuarios.js';
 import { getFilteredMovimientosData } from '../utils/filterMovimientos';
 
 function Movimientos() {
-  const { usuario, loading: usuarioLoading, error: usuarioError } = useUsuario();
+  const { usuario } = useUsuario();
   const { loading: loadingCI, error: errorCI, handleObtenerItemsYContactosListos } = useContactoItem();
   const { movimientos, handleGuardarMovimiento, handleToggleActive } = useFetchMovimientos();
 
@@ -59,8 +59,7 @@ function Movimientos() {
     }
   };
 
-  if (usuarioLoading || loadingCI) return <div>Cargando datos...</div>;
-  if (usuarioError) return <div>Error: {usuarioError}</div>;
+  if (loadingCI) return <div>Cargando datos...</div>;
   if (errorCI) return <div>Error: {errorCI}</div>;
 
   return (

@@ -1,14 +1,29 @@
 // hooks/useUsuario.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const useUsuario = () => {
-    const [usuario, setUsuario] = useState(null);
+    const navigate = useNavigate();
+    
+    // Estado inicial desde localStorage
+    const [estadoUsuario, setEstadoUsuario] = useState({
+        userId: localStorage.getItem('userId') || null,
+        rol: localStorage.getItem('rol') || null,
+        token: localStorage.getItem('token') || null
+    });
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const navigate = useNavigate();
 
-    // Función para iniciar sesión
+    // Sincronizar estado con localStorage al montar
+    useEffect(() => {
+        setEstadoUsuario({
+            userId: localStorage.getItem('userId'),
+            rol: localStorage.getItem('rol'),
+            token: localStorage.getItem('token')
+        });
+    }, []);
+
     const login = async (email, password) => {
         setLoading(true);
         setError(null);
@@ -16,84 +31,51 @@ const useUsuario = () => {
         try {
             const response = await fetch('http://localhost:3000/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                // Almacenar el token, el rol y el ID del usuario en localStorage
+                // Guardar solo datos esenciales en localStorage
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('rol', data.rol);
                 localStorage.setItem('userId', data.userId);
-                alert("Usuario logueado", data.userID, data.rol)
-                console.log("Usuario Logueado". data)
 
-                // Redirigir al dashboard
+                // Actualizar estado
+                setEstadoUsuario({
+                    userId: data.userId,
+                    rol: data.rol,
+                    token: data.token
+                });
+
                 navigate('/dashboard');
             } else {
-                throw new Error(data.error || 'Error al iniciar sesión');
+                throw new Error(data.error || 'Error de autenticación');
             }
         } catch (err) {
-            setError(err.message || 'Error al conectar con el servidor');
+            setError(err.message);
         } finally {
             setLoading(false);
         }
     };
 
-    // Función para cerrar sesión
     const logout = () => {
+        // Limpiar almacenamiento y estado
         localStorage.removeItem('token');
         localStorage.removeItem('rol');
         localStorage.removeItem('userId');
-        setUsuario(null);
+        setEstadoUsuario({ userId: null, rol: null, token: null });
         navigate('/login');
     };
 
-    // Función para obtener los datos del usuario logueado
-    const getUsuarioLogueado = async () => {
-        const token = localStorage.getItem('token');
-        const userId = localStorage.getItem('userId');
-
-        if (!token || !userId) {
-            setError('No se ha encontrado sesión');
-            setLoading(false);
-            return null;
-        }
-
-        try {
-            const response = await fetch(`http://localhost:3000/usuarios/${userId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos del usuario');
-            }
-
-            const data = await response.json();
-            setUsuario(data);
-            return data;
-        } catch (err) {
-            setError(err.message);
-            return null;
-        }
-        finally {
-            setLoading(false);
-        }
-    };
-
     return {
-        usuario,
+        usuario: estadoUsuario,  // Devuelve datos del localStorage
         loading,
         error,
         login,
-        logout,
-        getUsuarioLogueado,
+        logout
     };
 };
 
