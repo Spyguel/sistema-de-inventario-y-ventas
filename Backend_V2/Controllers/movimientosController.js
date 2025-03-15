@@ -84,11 +84,11 @@ const createMovimiento = async (req, res) => {
 
     // 2. Insertar la cabecera del movimiento y obtener su ID.
     const movResult = await client.query(
-      `INSERT INTO movimmiento (id_usuario, id_contaacto, fecha_mov, tipo_mov, razón, detalle)
-       VALUES ($1, $2, NOW(), $3, $4, $5) RETURNING id_movimmiento`,
+      `INSERT INTO movimiento (id_usuario, id_contacto, fecha_mov, tipo_mov, razón, detalle)
+       VALUES ($1, $2, NOW(), $3, $4, $5) RETURNING id_movimiento`,
        [id_usuario, id_contacto, tipo_mov, razon, detalle]
     );
-    const id_movimiento = movResult.rows[0].id_movimmiento;
+    const id_movimiento = movResult.rows[0].id_movimiento;
 
     // 3. Insertar la relación entre movimiento y documento.
     await client.query(
@@ -112,7 +112,7 @@ const createMovimiento = async (req, res) => {
       const lote = lotes[id_item];
       await client.query(
         `INSERT INTO lote (id_item, numero_lote, fecha_creacion_llegada, fecha_vencimiento, activo)
-         VALUES ($1, $2, NOW(), $3, 1)`,
+         VALUES ($1, $2, NOW(), $3, true)`,
          [id_item, lote.numero, lote.fecha]
       );
     }
