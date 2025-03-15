@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'react-toastify';
 
 function useFetchProductos() {
   const [productos, setProductos] = useState([]);
+  const [lowStockItems, setLowStockItems] = useState([]); // Estado añadido
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -9,9 +11,7 @@ function useFetchProductos() {
     try {
       setLoading(true);
       const response = await fetch('http://localhost:3000/items');
-      if (!response.ok) {
-        throw new Error('Error al obtener productos');
-      }
+      if (!response.ok) throw new Error('Error al obtener productos');
       const data = await response.json();
       setProductos(data.items);
       setError(null);
@@ -23,30 +23,66 @@ function useFetchProductos() {
     }
   };
 
-  useEffect(() => {
-    fetchProductos();
+
+  const fetchBajoStock = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:3000/items/bajo-stock');
+      if (!response.ok) throw new Error('Error al obtener stock bajo');
+      const data = await response.json();
+      setLowStockItems(data.items);
+      
+      // Mostrar notificación solo si hay nuevos items con stock bajo
+      if (data.items.length > 0) {
+        data.items.forEach(item => {
+          toast.warning(`Stock bajo: ${item.nombre} (${item.cantidad_actual}/${item.cantidad_minima})`, {
+            autoClose: false,
+            closeOnClick: false,
+            toastId: item.id_item // ID único para evitar duplicados
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching low stock items:', error);
+    }
   }, []);
 
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      await fetchProductos();
+      await fetchBajoStock();
+    };
+    fetchInitialData();
+
+    const interval = setInterval(fetchBajoStock, 300000); // Chequear cada 5 minutos
+    return () => clearInterval(interval);
+  }, [fetchBajoStock]);
+
+
   const handleGuardarProducto = async (productoData) => {
-    console.log('Guardando producto:', productoData);
     try {
       const url = productoData.id_item 
         ? `http://localhost:3000/items/${productoData.id_item}`
         : 'http://localhost:3000/items';
+        
+      const method = productoData.id_item ? 'PUT' : 'POST';
+      
       const response = await fetch(url, {
-        method: productoData.id_item ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        method,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productoData)
       });
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Error al guardar producto');
       }
-      fetchProductos();
+
+      await fetchProductos();
+      await fetchBajoStock(); // Actualizar lista de stock bajo
+      
+      toast.success(`Producto ${method === 'POST' ? 'creado' : 'actualizado'} correctamente`);
     } catch (error) {
-      console.error('Error al guardar producto:', error);
+      toast.error(error.message);
       throw error;
     }
   };
@@ -135,7 +171,17 @@ function useFetchProductos() {
   
 
 
-  return { productos, loading, error, handleGuardarProducto, handleToggleActive, fetchMateriaPrima, handleConfirmAddComponent, fetchComposicionPorIdItemFinal };
+  return { 
+    productos, 
+    lowStockItems,
+    loading, 
+    error, 
+    handleGuardarProducto, 
+    handleToggleActive,
+    fetchMateriaPrima,
+    handleConfirmAddComponent,
+    fetchComposicionPorIdItemFinal
+  };
 }
 
 export default useFetchProductos;

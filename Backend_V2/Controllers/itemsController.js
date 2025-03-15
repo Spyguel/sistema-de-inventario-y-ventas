@@ -5,7 +5,8 @@ const formatItems = (items) => {
   return items.map(item => ({
     ...item,
     fecha_creacion: new Date(item.fecha_creacion).toLocaleDateString('es-ES'),
-    activo: item.activo ? 'Activo' : 'No activo'
+    activo: item.activo ? 'Activo' : 'No activo',
+    alerta: item.cantidad_actual < item.cantidad_minima ? '⚠️ Stock bajo' : '✅ Stock suficiente'
   }));
 };
 
@@ -19,7 +20,6 @@ const getItems = async (req, res) => {
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
-
 // Obtener ítems por tipo
 const getItemsTipo = async (req, res) => {
   try {
@@ -44,6 +44,18 @@ const getItemsTipo = async (req, res) => {
     
   } catch (error) {
     console.error('Error al filtrar ítems:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+};
+
+const getItemsBajoStock = async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM public.item WHERE cantidad_actual < cantidad_minima'
+    );
+    res.status(200).json({ items: formatItems(result.rows) });
+  } catch (error) {
+    console.error('Error al obtener ítems con stock bajo:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
@@ -331,5 +343,6 @@ module.exports = {
   getMateriaPrimaActivos,
   createOrUpdateComposition,
   getComposersByItem,
-  getItemsProveedor
+  getItemsProveedor,
+  getItemsBajoStock
 };
