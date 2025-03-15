@@ -6,6 +6,7 @@ import { TextInput, SelectInput } from '../common/common/Forms/Imputs/index';
 import Message from '../common/common/Messages/Message';
 import { TIPOS_MOVIMIENTO, RAZONES_MOVIMIENTO, TIPOS_DOCUMENTO } from '../common/common/ui/const';
 
+
 const MovimientoForm = ({
   isOpen,
   onClose,
@@ -24,7 +25,8 @@ const MovimientoForm = ({
       fecha: '',
       total: '',
       pdf: null
-    }
+    },
+    lotes: {}
   });
 
   const [errors, setErrors] = useState({});
@@ -163,6 +165,19 @@ const MovimientoForm = ({
       cantidades: { ...prev.cantidades, [id_item]: value }
     }));
   };
+  const handleLoteChange = (id_item, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      lotes: {
+        ...prev.lotes,
+        [id_item]: {
+          ...prev.lotes[id_item],
+          [field]: value
+        }
+      }
+    }));
+  };
+  
 
   const resetForm = () => {
     setFormData({
@@ -177,7 +192,8 @@ const MovimientoForm = ({
         fecha: '',
         total: '',
         pdf: null
-      }
+      },
+      lotes:{},
     });
     setErrors({});
   };
@@ -185,24 +201,29 @@ const MovimientoForm = ({
   const logFormData = (formData) => {
     console.groupCollapsed('[MovimientoForm] Datos del formulario enviados');
     console.log('Tipo Movimiento:', formData.tipo_mov);
-    console.log('Razón:', formData.razon);
+    console.log('razon:', formData.razon);
     console.log('ID Contacto:', formData.id_contacto);
-    console.log('Detalle:', formData.detalle);
-    
+    console.log()
     console.log('Items y Cantidades:');
     formData.id_items.forEach(id_item => {
       console.log(
         `- Item ID: ${id_item},`,
         `Cantidad: ${formData.cantidades[id_item]}`
       );
+      console.log(
+        `  - Número de Lote: ${formData.lotes[id_item].numero || 'No especificado'},`,
+        `Fecha de Vencimiento: ${formData.lotes[id_item].fecha || 'No especificada'}`
+      );
     });
-  
+
     console.log('Documento:');
     console.log('-- Tipo:', formData.documento.tipo_documento);
     console.log('-- Fecha:', formData.documento.fecha);
     console.log('-- Total:', formData.documento.total);
     console.log('-- PDF:', formData.documento.pdf ? formData.documento.pdf.name : 'Ningún archivo seleccionado');
-    
+    console.log("");
+
+    console.log("Detalle", formData.detalle)
     console.groupEnd();
   };
 
@@ -246,7 +267,7 @@ const MovimientoForm = ({
   cancelText="Cancelar"
   submitText="Guardar"
   // Usamos la prop gridTemplate para definir una grid de 3 columnas con gap
-  gridTemplate="grid grid-cols-3 gap-4"
+  gridTemplate="grid grid-cols-4 gap-4"
 >
   {/* Fila 1 */}
   <div className="col-span-1">
@@ -290,6 +311,10 @@ const MovimientoForm = ({
   <div className="col-span-1">
     {/* Celda vacía para completar la fila 1 */}
   </div>
+  <div className="col-span-1">
+    {/* Celda vacía para completar la fila 1 */}
+  </div>
+  
 
   {/* Fila 2 */}
   <div className="col-span-1">
@@ -309,78 +334,106 @@ const MovimientoForm = ({
       error={errors.id_contacto}
     />
   </div>
-  <div className="col-span-1">
+  <div className="col-span-1 ">
     {/* Ítems y Cantidades */}
-    <div className="mb-4">
-      <label className="block text-gray-700 text-sm font-medium mb-2">
-        Ítems y Cantidades
-      </label>
-      {filteredItems.length === 0 && (
-        <p className="text-gray-500 text-sm">Seleccione un contacto para ver ítems</p>
-      )}
-      {filteredItems.map(item => {
-        const isSelected = formData.id_items.includes(String(item.id_item));
-        return (
-          <div key={item.id_item} className="flex justify-between items-center mb-2">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id={`item_${item.id_item}`}
-                checked={isSelected}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setFormData(prev => ({
-                      ...prev,
-                      id_items: [...prev.id_items, String(item.id_item)]
-                    }));
-                  } else {
-                    setFormData(prev => {
-                      const updatedItems = prev.id_items.filter(id => id !== String(item.id_item));
-                      const updatedCantidades = { ...prev.cantidades };
-                      delete updatedCantidades[String(item.id_item)];
-                      return {
-                        ...prev,
-                        id_items: updatedItems,
-                        cantidades: updatedCantidades
-                      };
-                    });
-                  }
-                }}
-                className="mr-2"
-              />
-              <label htmlFor={`item_${item.id_item}`} className="text-sm">
-                {item.nombre} ({item.unidad_medida})
-              </label>
-            </div>
+<div className="mb-4">
+  <label className="block text-gray-700 text-sm font-medium mb-2">
+    Ítems y Cantidades
+  </label>
+  {filteredItems.length === 0 && (
+    <p className="text-gray-500 text-sm">Seleccione un contacto para ver ítems</p>
+  )}
+  {filteredItems.map(item => {
+    const id = String(item.id_item);
+    const isSelected = formData.id_items.includes(id);
+    return (
+      <div key={id} className="flex flex-col mb-2 border-b pb-2 z-50">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center">
             <input
-              type="number"
-              placeholder="Cantidad"
-              value={formData.cantidades[String(item.id_item)] || ''}
-              onChange={(e) => handleCantidadChange(String(item.id_item), e.target.value)}
-              disabled={!isSelected}
-              className={`w-24 px-2 py-1 border ${
-                isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
-              } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 text-right`}
+              type="checkbox"
+              id={`item_${id}`}
+              checked={isSelected}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setFormData(prev => ({
+                    ...prev,
+                    id_items: [...prev.id_items, id]
+                  }));
+                } else {
+                  setFormData(prev => {
+                    const updatedItems = prev.id_items.filter(itemId => itemId !== id);
+                    const updatedCantidades = { ...prev.cantidades };
+                    delete updatedCantidades[id];
+                    const updatedLotes = { ...prev.lotes };
+                    delete updatedLotes[id];
+                    return {
+                      ...prev,
+                      id_items: updatedItems,
+                      cantidades: updatedCantidades,
+                      lotes: updatedLotes
+                    };
+                  });
+                }
+              }}
+              className="mr-2"
             />
-            {errors[`cantidad_${item.id_item}`] && (
-              <p className="text-red-500 text-xs ml-2">{errors[`cantidad_${item.id_item}`]}</p>
-            )}
+            <label htmlFor={`item_${id}`} className="text-sm">
+              {item.nombre} ({item.unidad_medida})
+            </label>
           </div>
-        );
-      })}
-      {errors.id_items && <p className="text-red-500 text-xs mt-1">{errors.id_items}</p>}
-    </div>
+          <input
+            type="number"
+            placeholder="Cantidad"
+            value={formData.cantidades[id] || ''}
+            onChange={(e) => handleCantidadChange(id, e.target.value)}
+            disabled={!isSelected}
+            className={`w-24 px-2 py-1 border ${
+              isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
+            } rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200 text-right`}
+          />
+          {errors[`cantidad_${id}`] && (
+            <p className="text-red-500 text-xs ml-2">{errors[`cantidad_${id}`]}</p>
+          )}
+        </div>
+        {isSelected && (
+          <div className="flex space-x-4 mt-1 z-50"> 
+            <div className="flex flex-col flex-1">
+              <label className="text-sm text-gray-600">Número de Lote</label>
+              <input
+                type="text"
+                placeholder="Número de Lote"
+                value={(formData.lotes[id] && formData.lotes[id].numero) || ''}
+                onChange={(e) => handleLoteChange(id, 'numero', e.target.value)}
+                className="mt-auto w-32 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+            <div className="flex flex-col flex-1">
+              <label className="text-sm text-gray-600">Fecha de Vencimiento</label>
+              <input
+                type="date"
+                placeholder="Fecha Vencimiento"
+                value={(formData.lotes[id] && formData.lotes[id].fecha) || ''}
+                onChange={(e) => handleLoteChange(id, 'fecha', e.target.value)}
+                className="w-32 px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-200"
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  })}
+
+  {errors.id_items && <p className="text-red-500 text-xs mt-1">{errors.id_items}</p>}
+</div>
+
   </div>
   <div className="col-span-1">
-    <TextInput
-      label="Detalle"
-      name="detalle"
-      value={formData.detalle}
-      onChange={handleChange}
-      error={errors.detalle}
-      placeholder="Ingrese detalles adicionales (opcional)"
-      multiline
-    />
+    {/* Celda vacía para completar la fila 2*/}
+  </div>
+  <div className="col-span-1">
+    {/* Celda vacía para completar la fila 2 */}
   </div>
 
   {/* Fila 3 */}
@@ -424,7 +477,10 @@ const MovimientoForm = ({
   </div>
 
   {/* Fila 4: PDF en la segunda columna */}
-  <div className="col-span-1"></div>
+  <div className="col-span-1">
+    {/* Celda vacía para completar la fila 3 */}
+  </div>
+  
   <div className="col-span-1">
     <div className="mb-4">
       <label htmlFor="pdf" className="block text-gray-700 text-sm font-medium mb-2">
@@ -443,6 +499,19 @@ const MovimientoForm = ({
       )}
     </div>
   </div>
+  
+  <div className="col-span-1">
+    <TextInput
+      label="Detalle"
+      name="detalle"
+      value={formData.detalle}
+      onChange={handleChange}
+      error={errors.detalle}
+      placeholder="Ingrese detalles adicionales (opcional)"
+      multiline
+    />
+  </div>
+
   <div className="col-span-1"></div>
 </Form>
 

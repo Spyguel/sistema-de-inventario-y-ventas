@@ -55,58 +55,90 @@ const toggleMovStatus = async (req, res) => {
 };
 
 const createMovimiento = async (req, res) => {
+  // Extrae los datos enviados desde el frontend.
   const {
-    tipo_documento,
-    fecha_documento,
-    total,
+    documento: { tipo_documento, fecha, total, pdf },
     id_usuario,
-    fecha_mov,
     tipo_mov,
     razon,
     detalle,
-    id_item,
-    cantidad, // Parámetro faltante (ej: cantidad del ítem)
-    id_contacto
+    id_contacto,
+    id_items,
+    cantidades,
+    lotes
   } = req.body;
 
+  const client = await pool.connect();
+
   try {
-    const result = await pool.query(
-      `SELECT insertar_movimiento_completo(
-        $1, $2, $3,   
-        $4, $5, $6, $7, $8, 
-        $9, $10,       
-        $11            
-      ) AS id_movimiento`,
-      [
-        tipo_documento,
-        fecha_documento,
-        total,
-        id_usuario,
-        fecha_mov,
-        tipo_mov,
-        razon,
-        detalle,
-        id_item,
-        cantidad, // <--- Parámetro faltante (ej: 100)
-        id_contacto || null  
-      ]
+    // Inicia la transacción.
+    await client.query('BEGIN');
+
+    // 1. Insertar el documento y obtener su ID.
+    const docResult = await client.query(
+      `INSERT INTO documento (tipo_documento, fecha, pdf, total)
+       VALUES ($1, $2, $3, $4) RETURNING id_documento`,
+       [tipo_documento, fecha, pdf, total]
     );
+    const id_documento = docResult.rows[0].id_documento;
+
+    // 2. Insertar la cabecera del movimiento y obtener su ID.
+    const movResult = await client.query(
+      `INSERT INTO movimiento (id_usuario, id_contacto, fecha_mov, tipo_mov, razón, detalle)
+       VALUES ($1, $2, NOW(), $3, $4, $5) RETURNING id_movimiento`,
+       [id_usuario, id_contacto, tipo_mov, razon, detalle]
+    );
+    const id_movimiento = movResult.rows[0].id_movimiento;
+
+    // 3. Insertar la relación entre movimiento y documento.
+    await client.query(
+      `INSERT INTO movimiento_documento (id_movimiento, id_documento)
+       VALUES ($1, $2)`,
+       [id_movimiento, id_documento]
+    );
+
+    // 4. Recorrer cada ítem seleccionado para insertar en movimiento_item y en lote.
+    for (let id_item of id_items) {
+      const cantidad = cantidades[id_item];
+
+      // Insertar el detalle del ítem.
+      await client.query(
+        `INSERT INTO movimiento_item (id_item, id_movimiento, cantidad)
+         VALUES ($1, $2, $3)`,
+         [id_item, id_movimiento, cantidad]
+      );
+
+      // Insertar los datos del lote para el ítem.
+      const lote = lotes[id_item];
+      await client.query(
+        `INSERT INTO lote (id_item, numero_lote, fecha_creacion_llegada, fecha_vencimiento, activo)
+         VALUES ($1, $2, NOW(), $3, true)`,
+         [id_item, lote.numero, lote.fecha]
+      );
+    }
+
+    // Finaliza la transacción.
+    await client.query('COMMIT');
 
     res.status(201).json({
       success: true,
-      id_movimiento: result.rows[0].id_movimiento,
+      id_movimiento,
       message: 'Movimiento creado exitosamente'
     });
-
   } catch (error) {
+    // Revierte la transacción en caso de error.
+    await client.query('ROLLBACK');
     console.error('Error al crear movimiento:', error);
     res.status(500).json({
       success: false,
       error: 'Error al crear movimiento',
       details: error.message
     });
+  } finally {
+    client.release();
   }
 };
+
 
 module.exports = {
   Movimientos,
