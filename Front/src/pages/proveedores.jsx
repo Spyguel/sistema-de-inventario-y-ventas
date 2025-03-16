@@ -9,7 +9,7 @@ import useItems from '../hooks/useItems';
 import useContactoItem from '../hooks/useContactoItem';
 import { getFilteredProveedoresData } from '../utils/filterProveedores';
 import Message from '../components/common/common/Messages/Message.jsx';
-import LoadingScreen from '../components/LoadingScreen.jsx'; // Importar componente de carga
+import LoadingScreen from '../components/LoadingScreen.jsx';
 
 function Proveedores() {
   const { 
@@ -32,18 +32,16 @@ function Proveedores() {
 
   const handleAsignarItems = async (id_proveedor, selectedItemsArr) => {
     try {
-      const promises = selectedItemsArr.map(async (id_item) => {
-        const response = await handleGuardarContactoItem({ id_contacto: id_proveedor, id_item });
+        // Se envía el array completo de ítems (ya sea un array o un único ítem)
+        const response = await handleGuardarContactoItem({ id_contacto: id_proveedor, selectedItems: selectedItemsArr });
         if (!response) {
-          throw new Error(`Error al asignar ítem con ID ${id_item} al proveedor con ID ${id_proveedor}`);
+            throw new Error(`Error al asignar los ítems al proveedor con ID ${id_proveedor}`);
         }
-      });
-
-      await Promise.all(promises);
     } catch (error) {
-      console.error(error);
+        console.error(error);
     }
-  };
+};
+
 
   const handleObtenerItemsProveedor = async (id_proveedor) => {
     try {
