@@ -84,48 +84,57 @@ const MovimientoForm = ({
     // Validación de Tipo de Movimiento
     if (!formData.tipo_mov || formData.tipo_mov.trim() === '') {
       newErrors.tipo_mov = 'Seleccione un tipo de movimiento';
+      console.log('Error en tipo_mov'); // Depuración
     }
-    
+  
     // Validación de Razón
     if (!formData.razon || formData.razon.trim() === '') {
       newErrors.razon = 'Seleccione una razón';
+      console.log('Error en razon'); // Depuración
     }
-    
+  
     // Validación de Contacto
     if (!formData.id_contacto || formData.id_contacto.trim() === '') {
       newErrors.id_contacto = 'Seleccione un contacto';
+      console.log('Error en id_contacto'); // Depuración
     }
-    
+  
     // Validación de Ítems y Cantidades
     if (!formData.id_items || formData.id_items.length === 0) {
       newErrors.id_items = 'Seleccione al menos un ítem';
+      console.log('Error en id_items'); // Depuración
     } else {
       formData.id_items.forEach(id_item => {
         const cantidad = formData.cantidades[id_item];
         if (!cantidad || Number(cantidad) <= 0) {
           newErrors[`cantidad_${id_item}`] = 'La cantidad debe ser mayor a 0';
+          console.log(`Error en cantidad_${id_item}`); // Depuración
         }
       });
     }
-    
+  
     // Validación de Datos del Documento
     if (!formData.documento.tipo_documento || formData.documento.tipo_documento.trim() === '') {
       newErrors['documento.tipo_documento'] = 'Seleccione un tipo de documento';
+      console.log('Error en documento.tipo_documento'); // Depuración
     }
     if (!formData.documento.fecha || formData.documento.fecha.trim() === '') {
       newErrors['documento.fecha'] = 'Ingrese la fecha del documento';
+      console.log('Error en documento.fecha'); // Depuración
     }
     if (!formData.documento.total || Number(formData.documento.total) <= 0) {
       newErrors['documento.total'] = 'El total debe ser mayor a 0';
+      console.log('Error en documento.total'); // Depuración
     }
-    // Si deseas que el archivo PDF sea obligatorio, descomenta lo siguiente:
-     if (!formData.documento.pdf) {
-       newErrors['documento.pdf'] = 'Adjunte el archivo PDF';
-     }
+    if (!formData.documento.pdf) {
+      newErrors['documento.pdf'] = 'Adjunte el archivo PDF';
+      console.log('Error en documento.pdf'); // Depuración
+    }
   
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -285,28 +294,31 @@ const MovimientoForm = ({
     />
   </div>
   <div className="col-span-1">
-    <SelectInput
-      label="Razón"
-      name="razon"
-      value={formData.razon}
-      onChange={handleChange}
-      disabled={!formData.tipo_mov}
-      options={Object.values(RAZONES_MOVIMIENTO)
-        .filter(razon => {
-          if (formData.tipo_mov === TIPOS_MOVIMIENTO.ENTRADA) {
-            return razon.toLowerCase() !== 'egreso';
-          }
-          if (formData.tipo_mov === TIPOS_MOVIMIENTO.SALIDA) {
-            return razon.toLowerCase() !== 'ingreso';
-          }
-          return true;
-        })
-        .map(razon => ({
-          value: razon,
-          label: razon
-        }))}
-      error={errors.razon}
-    />
+<SelectInput
+  label="Razón"
+  name="razon"
+  value={formData.razon}
+  onChange={handleChange}
+  disabled={!formData.tipo_mov}
+  options={[
+    { value: '', label: 'Seleccione una razón' },
+    ...Object.values(RAZONES_MOVIMIENTO)
+      .filter(razon => {
+        if (formData.tipo_mov === TIPOS_MOVIMIENTO.ENTRADA) {
+          return razon.toLowerCase() !== 'egreso'; // Solo excluye "Egreso" para Entrada
+        }
+        if (formData.tipo_mov === TIPOS_MOVIMIENTO.SALIDA) {
+          return razon.toLowerCase() !== 'ingreso'; // Solo excluye "Ingreso" para Salida
+        }
+        return true; // Muestra todas si no hay tipo seleccionado
+      })
+      .map(razon => ({
+        value: razon,
+        label: razon
+      }))
+  ]}
+  error={errors.razon}
+/>
   </div>
   <div className="col-span-1">
     {/* Celda vacía para completar la fila 1 */}

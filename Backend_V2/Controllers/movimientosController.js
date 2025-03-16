@@ -98,24 +98,33 @@ const createMovimiento = async (req, res) => {
     );
 
     // 4. Recorrer cada ítem seleccionado para insertar en movimiento_item y en lote.
-    for (let id_item of id_items) {
-      const cantidad = cantidades[id_item];
+  for (let id_item of id_items) {
+  const cantidad = cantidades[id_item];
 
-      // Insertar el detalle del ítem.
-      await client.query(
-        `INSERT INTO movimiento_item (id_item, id_movimiento, cantidad)
-         VALUES ($1, $2, $3)`,
-         [id_item, id_movimiento, cantidad]
-      );
+  // Insertar el detalle del ítem.
+  await client.query(
+    `INSERT INTO movimiento_item (id_item, id_movimiento, cantidad)
+     VALUES ($1, $2, $3)`,
+     [id_item, id_movimiento, cantidad]
+  );
 
-      // Insertar los datos del lote para el ítem.
-      const lote = lotes[id_item];
-      await client.query(
-        `INSERT INTO lote (id_item, numero_lote, fecha_creacion_llegada, fecha_vencimiento, activo)
-         VALUES ($1, $2, NOW(), $3, true)`,
-         [id_item, lote.numero, lote.fecha]
-      );
-    }
+  // Actualizar la cantidad actual del ítem en la tabla item
+  await client.query(
+    `UPDATE item 
+     SET cantidad_actual = cantidad_actual + $1 
+     WHERE id_item = $2`,
+    [cantidad, id_item]
+  );
+
+  // Insertar los datos del lote para el ítem.
+  const lote = lotes[id_item];
+  await client.query(
+    `INSERT INTO lote (id_item, numero_lote, fecha_creacion_llegada, fecha_vencimiento, activo)
+     VALUES ($1, $2, NOW(), $3, true)`,
+     [id_item, lote.numero, lote.fecha]
+  );
+}
+
 
     // Finaliza la transacción.
     await client.query('COMMIT');
