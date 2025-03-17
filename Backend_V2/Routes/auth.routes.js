@@ -47,10 +47,20 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const result = await pool.query(
-      `SELECT u."ID_usuario", u."ID_rol", u.email, u."contraseña", u.activo, r.nombre AS rol_nombre
+      `SELECT 
+          u."ID_usuario", 
+          u."ID_rol", 
+          u.email, 
+          u."contraseña", 
+          u.activo, 
+          r.nombre AS rol_nombre,
+          ARRAY_AGG(p."Nombre") AS permisos
        FROM public."USUARIO" u
        JOIN public."ROL" r ON u."ID_rol" = r."ID_rol"
-       WHERE u.email = $1`,
+       LEFT JOIN public."ROL_PERMISO" rp ON r."ID_rol" = rp."ID_rol"
+       LEFT JOIN public."PERMISOS" p ON rp."ID_permiso" = p."ID_permiso"
+       WHERE u.email = $1
+       GROUP BY u."ID_usuario", u."ID_rol", u.email, u."contraseña", u.activo, r.nombre`,
       [email]
     );
 
@@ -64,16 +74,20 @@ const login = async (req, res) => {
       return res.status(401).json({ error: 'Credenciales inválidas' });
 
     const token = generateToken(user);
+    
     res.json({ 
       message: 'Autenticación exitosa', 
       token, 
-      rol: user.rol_nombre ,
+      rol: user.rol_nombre,
+      permisos: user.permisos || [],  // Si no tiene permisos, enviamos un array vacío
       userId: user.ID_usuario
     });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 };
+
 
 module.exports = { register, login };

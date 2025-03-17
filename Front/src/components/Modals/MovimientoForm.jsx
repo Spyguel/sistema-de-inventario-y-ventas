@@ -398,7 +398,10 @@ const MovimientoForm = ({
             type="number"
             placeholder="Cantidad"
             value={formData.cantidades[id] || ''}
-            onChange={(e) => handleCantidadChange(id, e.target.value)}
+            onChange={(e) =>{
+              const value = Math.abs(Number(e.target.value)) || '';
+              handleCantidadChange(id, value);
+            }}
             disabled={!isSelected}
             className={`w-24 px-2 py-1 border ${
               isSelected ? 'border-gray-300' : 'border-gray-200 bg-gray-100'
